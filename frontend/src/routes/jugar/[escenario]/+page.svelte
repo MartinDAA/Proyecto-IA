@@ -3,7 +3,9 @@
 	import Cabecera from '#lib/components/Cabecera.svelte';
 	import Escena from '#lib/components/Escena.svelte';
 	import Frase from '#lib/components/Frase.svelte';
+	import Guia from '#lib/components/Guia.svelte';
 	import Pictograma from '#lib/components/Pictograma.svelte';
+	import { GUIA_JUEGO, INVITACION, POSES, primeraVez } from '#lib/guia.js';
 	import { titulo, type Mensaje, type Turno } from '#lib/juego.js';
 	import { callar, esperar, hablar } from '#lib/voz.js';
 	import type { PageProps } from './$types';
@@ -19,19 +21,26 @@
 	let aviso = $state<Mensaje | null>(null);
 	let ocupado = $state(false);
 	let fallo = $state<string | null>(null);
+	// Uku explica el juego antes de la primera ronda (una vez por sesión).
+	let guia = $state(false);
 
 	const resumen = $derived(turno.resumen);
 
 	function decirTurno(t: Turno) {
 		if (t.resumen) {
-			hablar([t.resumen.frase.texto, ...t.resumen.no_pertenecen.map((m) => m.texto)].join(' '));
+			hablar([
+				t.resumen.frase.texto,
+				...t.resumen.no_pertenecen.map((m) => m.texto),
+				INVITACION.texto
+			]);
 		} else {
 			hablar(t.mensaje.texto);
 		}
 	}
 
 	onMount(() => {
-		decirTurno(turno);
+		if (turno.ronda === 1 && !turno.resumen && primeraVez('guia-juego')) guia = true;
+		else decirTurno(turno);
 	});
 	onDestroy(callar);
 
@@ -71,7 +80,7 @@
 		if (nuevo.correcto) {
 			decirTurno(nuevo);
 		} else {
-			hablar(`${nuevo.retro?.texto ?? ''} ${nuevo.mensaje.texto}`);
+			hablar([nuevo.retro?.texto ?? '', nuevo.mensaje.texto]);
 		}
 		ocupado = false;
 	}
@@ -125,6 +134,14 @@
 				</section>
 			{/if}
 
+			<div class="flex w-full items-end gap-3">
+				<img src={POSES.celebra} alt="Uku" class="h-28 w-28 shrink-0 sm:h-36 sm:w-36" />
+				<div class="flex flex-1 flex-col gap-2 rounded-2xl bg-card p-3 shadow-md sm:p-4">
+					<Frase mensaje={INVITACION} tamano="sm" />
+					<p class="font-headings text-lg font-bold">{INVITACION.texto}</p>
+				</div>
+			</div>
+
 			<div class="flex flex-wrap justify-center gap-3">
 				<a
 					href="/"
@@ -146,7 +163,7 @@
 		</main>
 	{:else}
 		<main
-			class="mx-auto grid w-full max-w-6xl flex-1 content-start gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-6 lg:py-6"
+			class="mx-auto grid w-full max-w-7xl flex-1 content-start gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[1.7fr_1fr] lg:gap-6 lg:py-6"
 		>
 			<div class="flex flex-col gap-3">
 				<ol class="flex items-center justify-center gap-2" aria-label="Rondas">
@@ -165,32 +182,46 @@
 						</li>
 					{/each}
 				</ol>
-				<Escena escenario={turno.escenario} resaltar={turno.resaltar} />
+				<div data-guia="paisaje">
+					<Escena escenario={turno.escenario} resaltar={turno.resaltar} />
+				</div>
 			</div>
 
 			<div class="flex flex-col gap-4">
-				<section class="rounded-2xl bg-card p-4 shadow-sm" aria-live="polite">
-					{#if aviso}
-						<div class="mb-3 flex items-center gap-3 rounded-xl bg-section-red p-2">
-							<Frase mensaje={aviso} tamano="sm" />
-							<span class="text-sm font-medium">{aviso.texto}</span>
+				<section
+					class="flex items-end gap-3 rounded-2xl bg-card p-4 shadow-sm"
+					aria-live="polite"
+					data-guia="pregunta"
+				>
+					<!-- Uku pregunta, y tras un error da ánimo junto a la pista. -->
+					<img
+						src={POSES[turno.ayuda ? 'animo' : 'lee']}
+						alt="Uku"
+						class="h-20 w-20 shrink-0 sm:h-24 sm:w-24"
+					/>
+					<div class="min-w-0 flex-1">
+						{#if aviso}
+							<div class="mb-3 flex items-center gap-3 rounded-xl bg-section-red p-2">
+								<Frase mensaje={aviso} tamano="sm" />
+								<span class="text-sm font-medium">{aviso.texto}</span>
+							</div>
+						{/if}
+						<div class="flex items-start justify-between gap-3">
+							<Frase mensaje={turno.mensaje} />
+							<button
+								type="button"
+								class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-2xl text-primary-foreground shadow"
+								aria-label="Escuchar otra vez"
+								onclick={() => hablar(turno.mensaje.texto)}
+							>
+								🔊
+							</button>
 						</div>
-					{/if}
-					<div class="flex items-start justify-between gap-3">
-						<Frase mensaje={turno.mensaje} />
-						<button
-							type="button"
-							class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-2xl text-primary-foreground shadow"
-							aria-label="Escuchar otra vez"
-							onclick={() => hablar(turno.mensaje.texto)}
-						>
-							🔊
-						</button>
+						<p class="mt-2 text-sm text-muted-foreground">{turno.mensaje.texto}</p>
 					</div>
-					<p class="mt-2 text-sm text-muted-foreground">{turno.mensaje.texto}</p>
 				</section>
 
-				<div class="grid grid-cols-2 gap-3 sm:gap-4">
+				<div class="grid grid-cols-2 gap-3 sm:gap-4" data-guia="opciones">
 					{#each turno.opciones as opcion (opcion.id)}
 						{@const elegido = marcado?.id === opcion.id}
 						{@const destacado = turno.destacar === opcion.id}
@@ -228,9 +259,19 @@
 			class="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-green-700/85 p-6"
 			role="status"
 		>
-			<span class="text-8xl text-white" aria-hidden="true">✓</span>
+			<img src={POSES.celebra} alt="Uku celebra" class="h-40 w-40 sm:h-56 sm:w-56" />
 			<Frase mensaje={felicitacion} tamano="lg" class="justify-center" />
 			<p class="font-headings text-2xl font-bold text-white">{felicitacion.texto}</p>
 		</div>
 	{/if}
 </div>
+
+{#if guia}
+	<Guia
+		pasos={GUIA_JUEGO}
+		onterminar={() => {
+			guia = false;
+			decirTurno(turno);
+		}}
+	/>
+{/if}

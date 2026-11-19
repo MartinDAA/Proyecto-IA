@@ -1,7 +1,10 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import Cabecera from '#lib/components/Cabecera.svelte';
+	import Guia from '#lib/components/Guia.svelte';
 	import Pictograma from '#lib/components/Pictograma.svelte';
+	import uku from '#lib/assets/mascota/saludo.webp';
+	import { GUIA_INICIO, primeraVez } from '#lib/guia.js';
 	import { titulo } from '#lib/juego.js';
 	import { hablar } from '#lib/voz.js';
 	import type { PageProps } from './$types';
@@ -17,6 +20,10 @@
 			(_, i) => data.escenarios[(inicio + i) % data.escenarios.length]
 		)
 	);
+
+	// Uku explica la pantalla la primera vez en la sesión; luego se puede repetir con su botón.
+	let guia = $state(false);
+	onMount(() => (guia = primeraVez('guia-inicio')));
 </script>
 
 <svelte:head>
@@ -31,6 +38,7 @@
 			<h1 class="text-center font-headings text-2xl font-bold sm:text-3xl">Elige un paisaje</h1>
 			<button
 				type="button"
+				data-guia="escuchar"
 				class="flex h-11 w-11 items-center justify-center rounded-full bg-card text-2xl shadow"
 				aria-label="Escuchar"
 				onclick={() => hablar('Elige un paisaje.')}
@@ -39,7 +47,7 @@
 			</button>
 		</div>
 
-		<div class="grid gap-4 sm:grid-cols-3 sm:gap-6">
+		<div class="grid gap-4 sm:grid-cols-3 sm:gap-6" data-guia="paisajes">
 			{#each visibles as escenario (escenario.id)}
 				<a
 					href="/jugar/{escenario.id}"
@@ -63,10 +71,19 @@
 
 		<button
 			type="button"
+			data-guia="otros"
 			class="mx-auto flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-3 font-headings font-bold shadow-sm hover:opacity-90"
 			onclick={() => (inicio = (inicio + POR_PANTALLA) % data.escenarios.length)}
 		>
 			<span aria-hidden="true">🔄</span> Otros paisajes
+		</button>
+
+		<button
+			type="button"
+			class="mx-auto flex items-center gap-2 rounded-xl px-4 py-2 font-headings font-bold hover:bg-card"
+			onclick={() => (guia = true)}
+		>
+			<img src={uku} alt="" class="h-12 w-12" /> ¿Cómo se juega?
 		</button>
 	</main>
 
@@ -75,3 +92,7 @@
 		Propiedad: Gobierno de Aragón (España).
 	</footer>
 </div>
+
+{#if guia}
+	<Guia pasos={GUIA_INICIO} onterminar={() => (guia = false)} />
+{/if}
