@@ -1,0 +1,68 @@
+@import 'tailwindcss';
+
+/* Los degradados de cada paisaje se definen en el banco de escenarios. */
+@source '../../../datos/escenarios.json';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+	--font-headings: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+	--radius-sm: 6px;
+	--radius-lg: 16px;
+	--radius-xl: 24px;
+
+	--color-background: #f0f2f7;
+	--color-foreground: #1a1a2e;
+	--color-border: #e2e5ef;
+	--color-primary: #4a4fd4;
+	--color-primary-foreground: #ffffff;
+	--color-muted-foreground: #8a8fa8;
+	--color-card: #ffffff;
+	--color-header: #3a3fb8;
+	--color-header-foreground: #ffffff;
+	--color-section-green: #f0f7f0;
+	--color-section-red: #fdf2f2;
+	--color-section-purple: #f3f2fb;
+	--color-section-blue: #eef4fb;
+	--color-section-yellow: #fdf8ec;
+	--color-section-orange: #fdf3ea;
+	--color-selected-border: #3a6be8;
+	--color-dot-active: #3a6be8;
+	--color-dot-inactive: #c8cde0;
+	--color-check: #3a6be8;
+}
+
+@layer base {
+	:root {
+		color-scheme: light;
+	}
+
+	:root.dark {
+		color-scheme: dark;
+		--color-background: #0f1117;
+		--color-foreground: #e6e8f0;
+		--color-border: #2a2f42;
+		--color-primary: #6066e8;
+		--color-primary-foreground: #ffffff;
+		--color-muted-foreground: #9096b0;
+		--color-card: #181b26;
+		--color-header: #23266e;
+		--color-header-foreground: #ffffff;
+		--color-section-green: #142219;
+		--color-section-red: #2a1618;
+		--color-section-purple: #1d1b33;
+		--color-section-blue: #13202e;
+		--color-section-yellow: #2a2414;
+		--color-section-orange: #2a1d14;
+		--color-selected-border: #5b8cff;
+		--color-dot-active: #5b8cff;
+		--color-dot-inactive: #3a4058;
+		--color-check: #5b8cff;
+	}
+
+	body {
+		@apply bg-background font-body text-foreground;
+	}
+}

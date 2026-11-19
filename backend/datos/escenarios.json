@@ -1,0 +1,321 @@
+{
+  "pictogramas": {
+    "que": {"nombre": "¿qué?", "emoji": "❓", "buscar": "qué", "arasaac": 22620},
+    "hay": {"nombre": "hay", "emoji": "👉", "buscar": "hay", "arasaac": 10726},
+    "aqui": {"nombre": "aquí", "emoji": "📍", "buscar": "aquí", "arasaac": 5382},
+    "bien": {"nombre": "¡bien!", "emoji": "👍", "buscar": "bien", "arasaac": 5397},
+    "mira": {"nombre": "mira", "emoji": "👀", "buscar": "mirar", "arasaac": 2474},
+    "otra_vez": {"nombre": "otra vez", "emoji": "🔁", "buscar": "otra vez", "arasaac": 37162},
+    "es": {"nombre": "es", "emoji": "🟰", "buscar": "ser", "arasaac": 5581},
+    "tiene": {"nombre": "tiene", "emoji": "🤲", "buscar": "tener", "arasaac": 7271},
+    "no": {"nombre": "no", "emoji": "🚫", "buscar": "no", "arasaac": 5526},
+    "terminar": {"nombre": "terminar", "emoji": "🏁", "buscar": "terminar", "arasaac": 5358},
+    "cat_animal": {"nombre": "animal", "emoji": "🐾", "buscar": "animal", "arasaac": 6901},
+    "cat_construccion": {"nombre": "construcción", "emoji": "🏠", "buscar": "edificio", "arasaac": 5989},
+    "cat_transporte": {"nombre": "transporte", "emoji": "🚗", "buscar": "transporte", "arasaac": 10351},
+    "cat_objeto": {"nombre": "objeto", "emoji": "📦", "buscar": "objeto", "arasaac": 11318},
+    "p_leche": {"nombre": "leche", "emoji": "🥛", "arasaac": 2445},
+    "p_arena": {"nombre": "arena", "emoji": "🏖️", "arasaac": 4565},
+    "p_volar": {"nombre": "volar", "emoji": "🪽", "arasaac": 6246},
+    "p_lana": {"nombre": "lana", "emoji": "🧶", "arasaac": 2948},
+    "p_arbol": {"nombre": "árbol", "emoji": "🌳", "arasaac": 2256},
+    "p_frio": {"nombre": "frío", "emoji": "🥶", "arasaac": 4652},
+    "p_nadar": {"nombre": "nadar", "emoji": "🏊", "arasaac": 6568},
+    "p_mar": {"nombre": "mar", "emoji": "🌊", "arasaac": 2925},
+    "p_calor": {"nombre": "calor", "emoji": "🥵", "arasaac": 35561},
+    "p_saltar": {"nombre": "saltar", "emoji": "🦘", "arasaac": 2804},
+    "p_guardar": {"nombre": "guardar", "emoji": "📥", "arasaac": 5514},
+    "p_socorrista": {"nombre": "socorrista", "emoji": "🛟", "arasaac": 3156},
+    "p_alto": {"nombre": "alto", "emoji": "📏", "arasaac": 4557},
+    "p_barro": {"nombre": "barro", "emoji": "🟫", "arasaac": 5908},
+    "p_agua": {"nombre": "agua", "emoji": "💧", "arasaac": 2248},
+    "p_hielo": {"nombre": "hielo", "emoji": "🧊", "arasaac": 7128},
+    "p_jugar": {"nombre": "jugar", "emoji": "🧸", "arasaac": 2439},
+    "p_luz": {"nombre": "luz", "emoji": "💡", "arasaac": 8619},
+    "p_triangulo": {"nombre": "triángulo", "emoji": "🔺", "arasaac": 2604},
+    "p_barca": {"nombre": "barca", "emoji": "🚣", "arasaac": 4920},
+    "p_campo": {"nombre": "campo", "emoji": "🌾", "arasaac": 2683},
+    "p_viento": {"nombre": "viento", "emoji": "💨", "arasaac": 7259},
+    "p_personas": {"nombre": "personas", "emoji": "👥", "arasaac": 7117},
+    "p_via": {"nombre": "vía", "emoji": "🛤️", "buscar": "vía del tren", "arasaac": 7299},
+    "p_remar": {"nombre": "remar", "emoji": "🚣", "arasaac": 28031},
+    "p_nieve": {"nombre": "nieve", "emoji": "🌨️", "arasaac": 3135},
+    "p_pedal": {"nombre": "pedal", "emoji": "🦶", "arasaac": 6172},
+    "p_caja": {"nombre": "caja", "emoji": "📦", "arasaac": 5935},
+    "p_lago": {"nombre": "lago", "emoji": "🏞️", "arasaac": 6022},
+    "p_amarillo": {"nombre": "amarillo", "emoji": "🟨", "arasaac": 2648},
+    "p_sol": {"nombre": "sol", "emoji": "☀️", "arasaac": 2798},
+    "p_colores": {"nombre": "colores", "emoji": "🚦", "arasaac": 5968},
+    "p_montana": {"nombre": "montaña", "emoji": "⛰️", "arasaac": 2909},
+    "p_oler": {"nombre": "oler", "emoji": "👃", "arasaac": 2486},
+    "p_pesado": {"nombre": "pesado", "emoji": "🏋️", "arasaac": 27025},
+    "p_pinchar": {"nombre": "pinchar", "emoji": "📌", "arasaac": 5539},
+    "p_planta": {"nombre": "planta", "emoji": "🪴", "arasaac": 3143},
+    "granja": {"nombre": "granja", "emoji": "🌾", "arasaac": 3337},
+    "playa": {"nombre": "playa", "emoji": "🏖️", "arasaac": 2826},
+    "ciudad": {"nombre": "ciudad", "emoji": "🏙️", "arasaac": 2704},
+    "sierra": {"nombre": "sierra", "emoji": "🏔️", "buscar": "montaña", "arasaac": 2909},
+    "selva": {"nombre": "selva", "emoji": "🌴", "arasaac": 3385},
+    "polo": {"nombre": "polo", "emoji": "🧊", "buscar": "polo norte", "arasaac": 6135},
+    "parque": {"nombre": "parque", "emoji": "🌳", "arasaac": 2859},
+    "puerto": {"nombre": "puerto", "emoji": "⚓", "arasaac": 3145},
+    "desierto": {"nombre": "desierto", "emoji": "🏜️", "arasaac": 2734},
+    "lago": {"nombre": "lago", "emoji": "🏞️", "arasaac": 6022},
+    "vaca": {"nombre": "vaca", "emoji": "🐄", "categoria": "animal", "pista": ["tiene", "p_leche"], "texto_pista": "Nos da leche.", "arasaac": 2609},
+    "cangrejo": {"nombre": "cangrejo", "emoji": "🦀", "categoria": "animal", "pista": ["p_arena"], "texto_pista": "Camina por la arena.", "arasaac": 2312},
+    "paloma": {"nombre": "paloma", "emoji": "🕊️", "categoria": "animal", "pista": ["p_volar"], "texto_pista": "Vuela entre los edificios.", "arasaac": 2493},
+    "llama": {"nombre": "llama", "emoji": "🦙", "categoria": "animal", "pista": ["tiene", "p_lana"], "texto_pista": "Tiene mucha lana.", "arasaac": 9067},
+    "mono": {"nombre": "mono", "emoji": "🐒", "categoria": "animal", "pista": ["p_arbol"], "texto_pista": "Trepa los árboles.", "arasaac": 2477},
+    "pinguino": {"nombre": "pingüino", "emoji": "🐧", "categoria": "animal", "pista": ["p_frio"], "texto_pista": "Vive en el frío.", "arasaac": 3243},
+    "pato": {"nombre": "pato", "emoji": "🦆", "categoria": "animal", "pista": ["p_nadar"], "texto_pista": "Nada en el estanque.", "arasaac": 2563},
+    "gaviota": {"nombre": "gaviota", "emoji": "🐦", "categoria": "animal", "pista": ["p_mar"], "texto_pista": "Vuela sobre el mar.", "arasaac": 3334},
+    "camello": {"nombre": "camello", "emoji": "🐪", "categoria": "animal", "pista": ["p_calor"], "texto_pista": "Aguanta mucho calor.", "arasaac": 8522},
+    "rana": {"nombre": "rana", "emoji": "🐸", "categoria": "animal", "pista": ["p_saltar"], "texto_pista": "Salta junto al agua.", "arasaac": 2543},
+    "granero": {"nombre": "granero", "emoji": "🛖", "categoria": "construccion", "pista": ["p_guardar"], "texto_pista": "Ahí se guarda la comida de los animales.", "arasaac": 27810},
+    "caseta_salvavidas": {"nombre": "caseta de salvavidas", "emoji": "🛟", "categoria": "construccion", "buscar": "socorrista", "pista": ["p_socorrista"], "texto_pista": "Desde ahí cuidan a las personas que nadan.", "arasaac": 3156},
+    "edificio": {"nombre": "edificio", "emoji": "🏢", "categoria": "construccion", "pista": ["es", "p_alto"], "texto_pista": "Es muy alto.", "arasaac": 5989},
+    "casa_adobe": {"nombre": "casa de adobe", "emoji": "🏠", "categoria": "construccion", "buscar": "casa", "pista": ["p_barro"], "texto_pista": "Está hecha de barro.", "arasaac": 2317},
+    "casa_pilotes": {"nombre": "casa sobre pilotes", "emoji": "🛖", "categoria": "construccion", "buscar": "cabaña", "pista": ["p_agua"], "texto_pista": "Está en alto para que no entre el agua.", "arasaac": 8049},
+    "iglu": {"nombre": "iglú", "emoji": "🧊", "categoria": "construccion", "pista": ["p_hielo"], "texto_pista": "Está hecho de hielo.", "arasaac": 8137},
+    "tobogan": {"nombre": "tobogán", "emoji": "🛝", "categoria": "construccion", "pista": ["p_jugar"], "texto_pista": "Sirve para jugar.", "arasaac": 4759},
+    "faro": {"nombre": "faro", "emoji": "🗼", "categoria": "construccion", "pista": ["p_luz"], "texto_pista": "Da luz a los barcos.", "arasaac": 4646},
+    "piramide": {"nombre": "pirámide", "emoji": "🔺", "categoria": "construccion", "pista": ["p_triangulo"], "texto_pista": "Tiene forma de triángulo.", "arasaac": 8190},
+    "muelle": {"nombre": "muelle", "emoji": "🪵", "categoria": "construccion", "pista": ["p_barca"], "texto_pista": "Ahí llegan las barcas.", "arasaac": 39667},
+    "tractor": {"nombre": "tractor", "emoji": "🚜", "categoria": "transporte", "pista": ["p_campo"], "texto_pista": "Trabaja en el campo.", "arasaac": 2600},
+    "velero": {"nombre": "velero", "emoji": "⛵", "categoria": "transporte", "pista": ["p_viento"], "texto_pista": "Avanza con el viento.", "arasaac": 8714},
+    "bus": {"nombre": "bus", "emoji": "🚌", "categoria": "transporte", "buscar": "autobús", "pista": ["p_personas"], "texto_pista": "Lleva a muchas personas.", "arasaac": 2262},
+    "tren": {"nombre": "tren", "emoji": "🚆", "categoria": "transporte", "pista": ["p_via"], "texto_pista": "Va por las vías.", "arasaac": 2603},
+    "canoa": {"nombre": "canoa", "emoji": "🛶", "categoria": "transporte", "pista": ["p_remar"], "texto_pista": "Se mueve con remos.", "arasaac": 6179},
+    "trineo": {"nombre": "trineo", "emoji": "🛷", "categoria": "transporte", "pista": ["p_nieve"], "texto_pista": "Se desliza por la nieve.", "arasaac": 8710},
+    "bicicleta": {"nombre": "bicicleta", "emoji": "🚲", "categoria": "transporte", "pista": ["p_pedal"], "texto_pista": "Tiene pedales.", "arasaac": 2277},
+    "barco_carga": {"nombre": "barco de carga", "emoji": "🚢", "categoria": "transporte", "buscar": "barco", "pista": ["p_caja"], "texto_pista": "Lleva cajas muy grandes.", "arasaac": 2273},
+    "jeep": {"nombre": "jeep", "emoji": "🚙", "categoria": "transporte", "buscar": "todoterreno", "pista": ["p_arena"], "texto_pista": "Corre por la arena.", "arasaac": 3223},
+    "balsa_totora": {"nombre": "balsa de totora", "emoji": "🛶", "categoria": "transporte", "buscar": "balsa", "pista": ["p_lago"], "texto_pista": "Flota en el lago.", "arasaac": 4920},
+    "maiz": {"nombre": "maíz", "emoji": "🌽", "categoria": "objeto", "pista": ["es", "p_amarillo"], "texto_pista": "Es amarillo y crece en el campo.", "arasaac": 7150},
+    "sombrilla": {"nombre": "sombrilla", "emoji": "⛱️", "categoria": "objeto", "pista": ["p_sol"], "texto_pista": "Nos protege del sol.", "arasaac": 4746},
+    "semaforo": {"nombre": "semáforo", "emoji": "🚦", "categoria": "objeto", "pista": ["tiene", "p_colores"], "texto_pista": "Tiene luces de colores.", "arasaac": 2567},
+    "cerro_nevado": {"nombre": "cerro nevado", "emoji": "🏔️", "categoria": "objeto", "buscar": "montaña nevada", "pista": ["p_montana", "p_nieve"], "texto_pista": "Es una montaña con nieve.", "arasaac": 2884},
+    "platano": {"nombre": "plátano", "emoji": "🍌", "categoria": "objeto", "pista": ["es", "p_amarillo"], "texto_pista": "Es una fruta amarilla.", "arasaac": 2530},
+    "copo_nieve": {"nombre": "copo de nieve", "emoji": "❄️", "categoria": "objeto", "buscar": "copo de nieve", "pista": ["p_frio"], "texto_pista": "Es muy frío.", "arasaac": 38027},
+    "flor": {"nombre": "flor", "emoji": "🌷", "categoria": "objeto", "pista": ["p_oler"], "texto_pista": "Huele rico.", "arasaac": 3102},
+    "ancla": {"nombre": "ancla", "emoji": "⚓", "categoria": "objeto", "pista": ["es", "p_pesado"], "texto_pista": "Es pesada y sostiene al barco.", "arasaac": 6043},
+    "cactus": {"nombre": "cactus", "emoji": "🌵", "categoria": "objeto", "pista": ["p_pinchar"], "texto_pista": "Tiene espinas que pinchan.", "arasaac": 3070},
+    "totora": {"nombre": "totora", "emoji": "🌾", "categoria": "objeto", "buscar": "junco", "pista": ["p_planta", "p_agua"], "texto_pista": "Es una planta que crece en el agua.", "arasaac": 35467}
+  },
+  "categorias": [
+    {
+      "id": "animal",
+      "nombre": "animal",
+      "pictograma": "cat_animal"
+    },
+    {
+      "id": "construccion",
+      "nombre": "construcción",
+      "pictograma": "cat_construccion"
+    },
+    {
+      "id": "transporte",
+      "nombre": "transporte",
+      "pictograma": "cat_transporte"
+    },
+    {
+      "id": "objeto",
+      "nombre": "objeto",
+      "pictograma": "cat_objeto"
+    }
+  ],
+  "escenarios": [
+    {
+      "id": "granja",
+      "nombre": "la granja",
+      "cielo": "from-sky-300 via-lime-100 to-green-500",
+      "objetivo": {
+        "animal": "vaca",
+        "construccion": "granero",
+        "transporte": "tractor",
+        "objeto": "maiz"
+      },
+      "compatibles": [
+        "llama",
+        "pato",
+        "paloma",
+        "casa_adobe",
+        "jeep",
+        "bicicleta",
+        "flor"
+      ]
+    },
+    {
+      "id": "playa",
+      "nombre": "la playa",
+      "cielo": "from-sky-300 via-cyan-200 to-amber-200",
+      "objetivo": {
+        "animal": "cangrejo",
+        "construccion": "caseta_salvavidas",
+        "transporte": "velero",
+        "objeto": "sombrilla"
+      },
+      "compatibles": [
+        "gaviota",
+        "muelle",
+        "faro",
+        "ancla",
+        "barco_carga",
+        "canoa"
+      ]
+    },
+    {
+      "id": "ciudad",
+      "nombre": "la ciudad",
+      "cielo": "from-sky-300 via-indigo-200 to-slate-400",
+      "objetivo": {
+        "animal": "paloma",
+        "construccion": "edificio",
+        "transporte": "bus",
+        "objeto": "semaforo"
+      },
+      "compatibles": [
+        "gaviota",
+        "tren",
+        "bicicleta",
+        "jeep",
+        "flor",
+        "tobogan"
+      ]
+    },
+    {
+      "id": "sierra",
+      "nombre": "la sierra",
+      "cielo": "from-slate-200 via-sky-200 to-emerald-700",
+      "objetivo": {
+        "animal": "llama",
+        "construccion": "casa_adobe",
+        "transporte": "tren",
+        "objeto": "cerro_nevado"
+      },
+      "compatibles": [
+        "vaca",
+        "granero",
+        "tractor",
+        "maiz",
+        "flor",
+        "jeep",
+        "cactus",
+        "copo_nieve",
+        "bicicleta",
+        "rana"
+      ]
+    },
+    {
+      "id": "selva",
+      "nombre": "la selva",
+      "cielo": "from-emerald-200 via-green-300 to-green-700",
+      "objetivo": {
+        "animal": "mono",
+        "construccion": "casa_pilotes",
+        "transporte": "canoa",
+        "objeto": "platano"
+      },
+      "compatibles": [
+        "rana",
+        "pato",
+        "flor",
+        "muelle",
+        "maiz"
+      ]
+    },
+    {
+      "id": "polo",
+      "nombre": "el polo",
+      "cielo": "from-sky-100 via-cyan-100 to-slate-200",
+      "objetivo": {
+        "animal": "pinguino",
+        "construccion": "iglu",
+        "transporte": "trineo",
+        "objeto": "copo_nieve"
+      },
+      "compatibles": [
+        "cerro_nevado",
+        "gaviota",
+        "barco_carga"
+      ]
+    },
+    {
+      "id": "parque",
+      "nombre": "el parque",
+      "cielo": "from-sky-300 via-emerald-100 to-green-400",
+      "objetivo": {
+        "animal": "pato",
+        "construccion": "tobogan",
+        "transporte": "bicicleta",
+        "objeto": "flor"
+      },
+      "compatibles": [
+        "paloma",
+        "rana",
+        "edificio",
+        "semaforo",
+        "bus",
+        "sombrilla"
+      ]
+    },
+    {
+      "id": "puerto",
+      "nombre": "el puerto",
+      "cielo": "from-sky-300 via-blue-200 to-blue-500",
+      "objetivo": {
+        "animal": "gaviota",
+        "construccion": "faro",
+        "transporte": "barco_carga",
+        "objeto": "ancla"
+      },
+      "compatibles": [
+        "cangrejo",
+        "muelle",
+        "velero",
+        "canoa",
+        "edificio",
+        "paloma",
+        "tren",
+        "semaforo",
+        "bus"
+      ]
+    },
+    {
+      "id": "desierto",
+      "nombre": "el desierto",
+      "cielo": "from-amber-100 via-orange-200 to-yellow-500",
+      "objetivo": {
+        "animal": "camello",
+        "construccion": "piramide",
+        "transporte": "jeep",
+        "objeto": "cactus"
+      },
+      "compatibles": [
+        "casa_adobe",
+        "sombrilla"
+      ]
+    },
+    {
+      "id": "lago",
+      "nombre": "el lago",
+      "cielo": "from-sky-200 via-sky-300 to-blue-600",
+      "objetivo": {
+        "animal": "rana",
+        "construccion": "muelle",
+        "transporte": "balsa_totora",
+        "objeto": "totora"
+      },
+      "compatibles": [
+        "pato",
+        "gaviota",
+        "llama",
+        "canoa",
+        "velero",
+        "casa_adobe",
+        "cerro_nevado",
+        "flor"
+      ]
+    }
+  ]
+}
