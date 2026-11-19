@@ -97,12 +97,9 @@ ia_models/
 └── herramientas/            # utilidades (resolver pictogramas de ARASAAC)
 datos/escenarios.json        # banco de escenarios y catálogo de pictogramas
 tests/                       # pruebas del motor y de la API
-docs/Informe.docx            # informe académico del proyecto (Hito 1)
 ```
 
 ## Documentación
 
-- [Informe del proyecto (Hito 1)](docs/Informe.docx): contexto, objetivos,
-  modalidad de juego, catálogo de pictogramas y capturas.
 - [README general del monorepo](../README.md)
 - [Documentación del frontend](../frontend/README.md)

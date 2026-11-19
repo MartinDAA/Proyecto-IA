@@ -16,10 +16,6 @@ dependencias, configuración y documentación.
 | [`backend/`](backend/) | API FastAPI, motor del agente y banco de escenarios (Python + uv). | [README del backend](backend/README.md) |
 | [`frontend/`](frontend/) | Interfaz SvelteKit con pictogramas y voz (TypeScript + pnpm). | [README del frontend](frontend/README.md) |
 
-El informe académico del proyecto está en
-[`backend/docs/Informe.docx`](backend/docs/Informe.docx) y se enlaza desde el
-README del backend.
-
 ## Puesta en marcha
 
 Requisitos: [uv](https://docs.astral.sh/uv/), [pnpm](https://pnpm.io/) y Node.js 24+.
