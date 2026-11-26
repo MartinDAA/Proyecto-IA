@@ -5,7 +5,7 @@ class PictogramaOut(BaseModel):
     id: str
     nombre: str
     emoji: str
-    # URL del pictograma de ARASAAC; si no carga, el frontend muestra el emoji.
+    # Ruta del pictograma de ARASAAC en el frontend; si no carga, se muestra el emoji.
     imagen: str | None
 
 
@@ -65,8 +65,17 @@ class TurnoOut(BaseModel):
     resumen: ResumenOut | None = None
 
 
+class PerfilOut(BaseModel):
+    id: str
+    nombre: str
+    descripcion: str
+
+
 class IniciarRequest(BaseModel):
     escenario_id: str = Field(min_length=1)
+    perfil: str = "estandar"
+    # Elementos que el educador pidió no mostrar.
+    evitar: list[str] = Field(default=[], max_length=100)
 
 
 class ResponderRequest(BaseModel):

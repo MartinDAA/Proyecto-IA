@@ -7,8 +7,24 @@
 		class: className = ''
 	}: { picto: Pictograma; etiqueta?: boolean; class?: string } = $props();
 
-	// Sin conexión con ARASAAC se muestra el emoji equivalente.
+	// Si la imagen no carga se muestra el emoji equivalente.
 	let fallo = $state(false);
+
+	// Achica el nombre hasta que quepa sin partir palabras: partirlas enseña mal el vocabulario.
+	function caber(nodo: HTMLElement) {
+		const MINIMO = 8;
+		function ajustar() {
+			nodo.style.fontSize = '';
+			let tamano = parseFloat(getComputedStyle(nodo).fontSize);
+			while (nodo.scrollWidth > nodo.clientWidth && tamano > MINIMO) {
+				nodo.style.fontSize = `${--tamano}px`;
+			}
+		}
+		// Se observa la figura: su ancho no depende del tamaño de la letra.
+		const observador = new ResizeObserver(ajustar);
+		observador.observe(nodo.parentElement!);
+		return { destroy: () => observador.disconnect() };
+	}
 </script>
 
 <figure class={['flex min-w-0 flex-col items-center gap-1', className]}>
@@ -29,11 +45,15 @@
 			</span>
 		{/if}
 	</div>
-	{#if etiqueta}
-		<figcaption
-			class="w-full text-center text-xs leading-tight font-bold tracking-wide [overflow-wrap:anywhere] uppercase sm:text-sm"
-		>
-			{picto.nombre}
-		</figcaption>
-	{/if}
+	<!-- key: al cambiar el nombre se vuelve a ajustar el tamaño. -->
+	{#key picto.nombre}
+		{#if etiqueta}
+			<figcaption
+				use:caber
+				class="w-full text-center text-xs leading-tight font-bold tracking-wide uppercase sm:text-sm"
+			>
+				{picto.nombre}
+			</figcaption>
+		{/if}
+	{/key}
 </figure>

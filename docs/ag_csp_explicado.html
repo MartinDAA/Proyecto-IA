@@ -1,0 +1,602 @@
+<title>Algoritmo genético y CSP en K'iti Yachay</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Lexend:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: columna de lectura de 46rem; los laboratorios interactivos se ensanchan a 68rem como "mesas de trabajo". */
+:root {
+  --bg: #f3f4fa;
+  --surface: #ffffff;
+  --sunk: #e9ebf5;
+  --fg: #1b1c33;
+  --muted: #5b5f80;
+  --line: #d9dcea;
+  --accent: #4a4fd4;
+  --accent-soft: #e4e5fb;
+  --ok: #1d7f55;
+  --ok-soft: #dcf1e7;
+  --bad: #bf3f35;
+  --bad-soft: #f9e1de;
+  --h-r: #c98a12;   /* resaltar */
+  --h-p: #128a8a;   /* pista */
+  --h-m: #c2417a;   /* modelar */
+  --on-gene: #ffffff;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Lexend", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14152a; --surface: #1d1f38; --sunk: #25284a; --fg: #e9eaf7; --muted: #a3a7c9;
+    --line: #34385e; --accent: #8f93ff; --accent-soft: #2c2f63; --ok: #5fd0a0; --ok-soft: #173d32;
+    --bad: #ff8a80; --bad-soft: #4a2229; --h-r: #e0a83a; --h-p: #2fb5b5; --h-m: #e0679c; --on-gene: #14152a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14152a; --surface: #1d1f38; --sunk: #25284a; --fg: #e9eaf7; --muted: #a3a7c9;
+  --line: #34385e; --accent: #8f93ff; --accent-soft: #2c2f63; --ok: #5fd0a0; --ok-soft: #173d32;
+  --bad: #ff8a80; --bad-soft: #4a2229; --h-r: #e0a83a; --h-p: #2fb5b5; --h-m: #e0679c; --on-gene: #14152a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 1.0625rem; line-height: 1.65; font-weight: 300;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 2.5rem 4rem;
+}
+.wrap { max-width: 46rem; margin-inline: auto; display: grid; gap: 1.25rem; }
+.wide { max-width: 68rem; margin-inline: auto; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.1; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.2rem, 6vw, 3.6rem); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 800; letter-spacing: -0.01em; }
+h3 { font-size: 1.2rem; font-weight: 600; }
+p { margin: 0; }
+strong { font-weight: 600; }
+code { font-family: var(--mono); font-size: 0.88em; background: var(--sunk); padding: 0.1em 0.35em; border-radius: 4px; }
+.eyebrow { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.lead { font-size: 1.2rem; color: var(--muted); }
+.muted { color: var(--muted); }
+.small { font-size: 0.9rem; }
+
+header.hero { display: grid; gap: 1rem; padding-bottom: 1.5rem; }
+.versus { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; margin-top: 0.5rem; }
+.versus > div { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 1.1rem 1.2rem; display: grid; gap: 0.4rem; }
+.versus .q { font-family: var(--display); font-size: 1.3rem; font-weight: 600; }
+
+section.part { margin-top: 3.5rem; display: grid; gap: 1.25rem; }
+.divider { height: 1px; background: var(--line); margin-top: 3rem; }
+
+dl.pieces { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.75rem; margin: 0; }
+dl.pieces > div { border-top: 3px solid var(--accent); background: var(--surface); padding: 0.8rem 1rem 1rem; border-radius: 0 0 10px 10px; display: grid; gap: 0.3rem; align-content: start; }
+dl.pieces dt { font-family: var(--display); font-weight: 600; font-size: 1.1rem; }
+dl.pieces dd { margin: 0; font-size: 0.95rem; }
+dl.pieces dd .ex { display: block; color: var(--muted); font-size: 0.88rem; margin-top: 0.25rem; }
+
+ol.cycle { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.6rem; counter-reset: c; }
+ol.cycle li { counter-increment: c; display: grid; grid-template-columns: 2.2rem 1fr; gap: 0.75rem; align-items: start; }
+ol.cycle li::before { content: counter(c); font-family: var(--mono); font-weight: 600; width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+ol.cycle li > div { min-width: 0; }
+
+/* ---------- laboratorios ---------- */
+.lab { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: clamp(1rem, 3vw, 1.75rem); display: grid; gap: 1.25rem; }
+.lab-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 1rem; }
+.lab-head > div { min-width: 0; display: grid; gap: 0.25rem; }
+.controls { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+button, select {
+  font-family: var(--body); font-size: 0.95rem; font-weight: 500;
+  border-radius: 999px; padding: 0.5rem 1rem; border: 1px solid var(--line);
+  background: var(--surface); color: var(--fg); cursor: pointer;
+}
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+button:hover { border-color: var(--accent); }
+button:disabled { opacity: 0.45; cursor: default; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+label.check { display: inline-flex; gap: 0.45rem; align-items: center; font-size: 0.92rem; cursor: pointer; }
+label.check input { width: 1.05rem; height: 1.05rem; accent-color: var(--accent); }
+
+.lab-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 1.5rem; }
+@media (max-width: 860px) { .lab-grid { grid-template-columns: 1fr; } }
+
+/* CSP: dominios */
+.domains { display: grid; gap: 0.8rem; }
+.dom-row { display: grid; grid-template-columns: 2.6rem 1fr; gap: 0.6rem; align-items: center; }
+.dom-name { font-family: var(--mono); font-weight: 600; font-size: 0.95rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.chip { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.82rem; padding: 0.22rem 0.55rem; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); white-space: nowrap; transition: background .2s, border-color .2s, opacity .2s; }
+.chip .em { font-size: 1rem; line-height: 1; }
+.chip.pruned { opacity: 0.38; text-decoration: line-through; background: var(--sunk); border-style: dashed; }
+.chip.assigned { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 500; }
+.chip.try-ok { border-color: var(--ok); background: var(--ok-soft); }
+.chip.try-bad { border-color: var(--bad); background: var(--bad-soft); }
+.legend { display: flex; flex-wrap: wrap; gap: 0.9rem; font-size: 0.82rem; color: var(--muted); }
+.legend span { display: inline-flex; gap: 0.35rem; align-items: center; }
+.sw { width: 0.85rem; height: 0.85rem; border-radius: 50%; border: 1.5px solid var(--line); display: inline-block; }
+
+.stepbox { border-radius: 12px; background: var(--sunk); padding: 1rem 1.1rem; display: grid; gap: 0.5rem; align-content: start; min-height: 9rem; }
+.stepbox .tag { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
+.tag.node { color: var(--h-r); } .tag.ac3 { color: var(--h-p); } .tag.bt { color: var(--accent); } .tag.ok { color: var(--ok); } .tag.bad { color: var(--bad); }
+.counters { display: flex; gap: 1.2rem; font-family: var(--mono); font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; flex-wrap: wrap; }
+.round { display: grid; gap: 0.6rem; }
+.round-q { font-weight: 500; }
+.cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; }
+.card { aspect-ratio: 1; max-width: 100%; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); display: grid; place-items: center; align-content: center; gap: 0.15rem; font-size: 0.75rem; text-align: center; padding: 0.3rem; }
+.card .em { font-size: 2rem; line-height: 1; }
+.card.correct { border-color: var(--ok); background: var(--ok-soft); }
+.card.empty { border-style: dashed; color: var(--muted); }
+
+/* AG */
+.genes-legend { display: flex; flex-wrap: wrap; gap: 0.9rem; font-size: 0.88rem; }
+.genes-legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.g { display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: 6px; font-family: var(--mono); font-weight: 600; font-size: 0.8rem; color: var(--on-gene); }
+.g.r { background: var(--h-r); } .g.p { background: var(--h-p); } .g.m { background: var(--h-m); }
+.g.mut { outline: 2.5px solid var(--fg); outline-offset: 1px; }
+.chromo-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; }
+.chromo { background: var(--sunk); border-radius: 12px; padding: 0.9rem 1rem; display: grid; gap: 0.6rem; align-content: start; }
+.chromo-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+.score { font-family: var(--mono); font-weight: 600; font-variant-numeric: tabular-nums; }
+table.cgrid { border-collapse: separate; border-spacing: 4px; font-size: 0.82rem; }
+table.cgrid th { font-weight: 400; color: var(--muted); text-align: left; padding-right: 0.4rem; }
+table.cgrid thead th { text-align: center; font-family: var(--mono); font-size: 0.72rem; }
+.pop { display: grid; gap: 3px; }
+.pop-row { display: grid; grid-template-columns: 3.2rem repeat(12, minmax(0, 1fr)); gap: 2px; align-items: center; }
+.pop-row .score { font-size: 0.72rem; color: var(--muted); }
+.pop-row i { height: 0.7rem; border-radius: 2px; display: block; }
+.pop-row i.r { background: var(--h-r); } .pop-row i.p { background: var(--h-p); } .pop-row i.m { background: var(--h-m); }
+.pop-row i.sep { margin-left: 3px; }
+.chart-box { overflow-x: auto; }
+svg.chart { width: 100%; min-width: 22rem; height: auto; display: block; }
+svg.chart text { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+.cross { display: grid; gap: 0.45rem; }
+.cross-row { display: grid; grid-template-columns: 4.5rem 1fr; gap: 0.5rem; align-items: center; font-size: 0.85rem; }
+.bar { display: flex; flex-wrap: wrap; gap: 3px; }
+.bar .g { width: 1.45rem; height: 1.45rem; font-size: 0.7rem; }
+.bar .cut { width: 2px; background: var(--fg); margin-inline: 2px; align-self: stretch; }
+
+.note { border-left: 3px solid var(--line); padding-left: 1rem; color: var(--muted); font-size: 0.92rem; }
+pre { background: var(--sunk); border-radius: 12px; padding: 1rem 1.1rem; overflow-x: auto; font-family: var(--mono); font-size: 0.82rem; line-height: 1.55; margin: 0; }
+.tbl-wrap { overflow-x: auto; }
+table.compare { border-collapse: collapse; width: 100%; font-size: 0.95rem; min-width: 34rem; }
+table.compare th, table.compare td { text-align: left; padding: 0.7rem 0.8rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.compare thead th { font-family: var(--display); font-size: 1.05rem; }
+table.compare tbody th { font-weight: 500; color: var(--muted); width: 22%; }
+table.probs { border-collapse: collapse; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+table.probs th, table.probs td { padding: 0.3rem 0.6rem; border-bottom: 1px solid var(--line); text-align: center; }
+table.probs th:first-child { text-align: left; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Inteligencia Artificial · TP K'iti Yachay</p>
+    <h1>Algoritmo genético y CSP en K'iti Yachay</h1>
+    <p class="lead">Dos herramientas del curso, explicadas con el propio juego: qué distractores mostrar en cada ronda y qué ayuda dar después de cada error.</p>
+    <div class="versus">
+      <div>
+        <span class="eyebrow">CSP · Semana 13</span>
+        <span class="q">Encuentra una respuesta que cumpla todas las reglas.</span>
+        <span class="muted small">No busca la mejor opción: busca una opción válida. Si no existe ninguna, lo demuestra.</span>
+      </div>
+      <div>
+        <span class="eyebrow">Algoritmo genético · Semana 3</span>
+        <span class="q">Mejora respuestas poco a poco, como la evolución.</span>
+        <span class="muted small">Prueba muchas soluciones, se queda con las mejores, las mezcla y las cambia un poco. Repite.</span>
+      </div>
+    </div>
+  </header>
+</div>
+
+<!-- ======================= CSP ======================= -->
+<div class="wrap">
+  <section class="part" aria-labelledby="csp-t">
+    <p class="eyebrow">Parte 1</p>
+    <h2 id="csp-t">CSP: problemas de satisfacción de restricciones</h2>
+    <p>Un CSP describe un problema con tres piezas. Luego un algoritmo general (el mismo para un sudoku, un horario o un mapa) busca valores que cumplan todo. Tú solo describes el problema; no programas la solución a mano.</p>
+    <p>En K'iti Yachay, cada ronda muestra el elemento correcto y <strong>tres distractores</strong>. Hoy <code>Banco.distractores()</code> los elige al azar. Con un CSP se eligen al azar <em>pero respetando reglas pedagógicas</em>.</p>
+    <dl class="pieces">
+      <div><dt>Variables</dt><dd>Lo que hay que decidir.<span class="ex">D1, D2 y D3: los tres distractores de la ronda.</span></dd></div>
+      <div><dt>Dominios</dt><dd>Los valores posibles de cada variable.<span class="ex">Los 10 animales del banco de escenarios.</span></dd></div>
+      <div><dt>Restricciones</dt><dd>Las reglas que la solución debe cumplir.<span class="ex">No puede ser la respuesta, no debe confundir, y cada distractor de un ambiente distinto.</span></dd></div>
+    </dl>
+    <h3>Las restricciones de este ejemplo</h3>
+    <ul style="margin:0; padding-left:1.2rem; display:grid; gap:0.35rem;">
+      <li><strong>Unaria</strong> (una sola variable): ningún distractor puede ser la respuesta del paisaje.</li>
+      <li><strong>Unaria</strong>: nada que pueda vivir de verdad en ese paisaje. En la granja también hay patos y palomas; si aparecen, el niño “se equivoca” con razón.</li>
+      <li><strong>Binaria</strong> (dos variables): D1 ≠ D2 ≠ D3, y cada uno de un <strong>ambiente distinto</strong> (agua, frío, calor, campo y ciudad), para que las opciones se distingan bien.</li>
+      <li><strong>Opcional</strong>: la educadora pide “nada del frío”. Con eso, en la granja <em>no hay solución</em>; mira cómo lo descubre el backtracking.</li>
+    </ul>
+  </section>
+</div>
+
+<div class="wide" style="margin-top:1.5rem">
+  <div class="lab" id="csp-lab">
+    <div class="lab-head">
+      <div>
+        <span class="eyebrow">Laboratorio 1</span>
+        <h3>Elegir los distractores de la ronda de animales</h3>
+      </div>
+      <div class="controls">
+        <select id="csp-esc" aria-label="Paisaje"></select>
+        <label class="check"><input type="checkbox" id="csp-frio"> Nada del frío</label>
+      </div>
+    </div>
+    <div class="legend" aria-hidden="true">
+      <span><i class="sw" style="background:var(--surface)"></i>disponible</span>
+      <span><i class="sw" style="background:var(--sunk);border-style:dashed"></i>eliminado</span>
+      <span><i class="sw" style="background:var(--ok-soft);border-color:var(--ok)"></i>se prueba y cumple</span>
+      <span><i class="sw" style="background:var(--bad-soft);border-color:var(--bad)"></i>se prueba y no cumple</span>
+      <span><i class="sw" style="background:var(--accent);border-color:var(--accent)"></i>asignado</span>
+    </div>
+    <div class="lab-grid">
+      <div class="domains" id="csp-domains"></div>
+      <div style="display:grid; gap:1rem; align-content:start; min-width:0">
+        <div class="stepbox" aria-live="polite">
+          <span class="tag" id="csp-tag"></span>
+          <p id="csp-msg"></p>
+        </div>
+        <div class="counters"><span id="csp-count"></span><span id="csp-tries"></span><span id="csp-back"></span></div>
+        <div class="controls">
+          <button id="csp-prev">Atrás</button>
+          <button class="primary" id="csp-next">Siguiente paso</button>
+          <button id="csp-end">Ir al final</button>
+          <button id="csp-new">Otra solución</button>
+        </div>
+      </div>
+    </div>
+    <div class="round">
+      <p class="round-q" id="csp-q"></p>
+      <div class="cards" id="csp-cards"></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" style="margin-top:1.75rem">
+  <h3>Qué hace cada etapa</h3>
+  <ol class="cycle">
+    <li><div><strong>Consistencia de nodo.</strong> Aplica las restricciones unarias y borra de cada dominio los valores que nunca podrían servir. Es barato y se hace una sola vez.</div></li>
+    <li><div><strong>AC-3 (consistencia de arco).</strong> Para cada par (Di, Dj) borra los valores de Di que no tienen ningún compañero válido en Dj. Aquí casi nunca borra nada, y eso enseña algo: AC-3 solo mira <em>pares</em>, así que no ve que con “nada del frío” faltan ambientes para tres distractores.</div></li>
+    <li><div><strong>Backtracking.</strong> Asigna una variable a la vez. Si un valor choca con lo ya asignado, prueba el siguiente; si a una variable se le acaban los valores, <em>retrocede</em> y cambia la anterior. Si retrocede hasta el inicio, el problema no tiene solución.</div></li>
+  </ol>
+  <p>Como el orden de los valores se baraja en cada partida, el niño ve combinaciones distintas, pero todas cumplen las reglas.</p>
+  <pre><code># Cómo se vería en backend/ia_models/escenarios.py (boceto)
+def distractores(self, escenario, categoria, rng, n=3):
+    dominio = [e for e in self.elementos_de(categoria)
+               if e != escenario.objetivo[categoria]          # unaria
+               and e not in escenario.confundibles]           # unaria
+    rng.shuffle(dominio)
+    def backtrack(elegidos):
+        if len(elegidos) == n:
+            return elegidos
+        for e in dominio:
+            if e not in elegidos and ambiente(e) not in {ambiente(x) for x in elegidos}:
+                if (sol := backtrack(elegidos + [e])):
+                    return sol
+        return None                                           # retrocede
+    return backtrack([])</code></pre>
+  <p class="note">El campo <code>confundibles</code> y el “ambiente” de cada elemento no existen hoy en <code>escenarios.json</code>; habría que agregarlos. Las listas de esta página son un ejemplo.</p>
+</div>
+
+<div class="wrap"><div class="divider"></div></div>
+
+<!-- ======================= AG ======================= -->
+<div class="wrap">
+  <section class="part" aria-labelledby="ag-t" style="margin-top:0.5rem">
+    <p class="eyebrow">Parte 2</p>
+    <h2 id="ag-t">Algoritmo genético</h2>
+    <p>Un algoritmo genético es una búsqueda inspirada en la selección natural. En lugar de mejorar una sola solución, mantiene una <strong>población</strong> de soluciones. Cada solución se escribe como un <strong>cromosoma</strong>, una cadena de <strong>genes</strong>, y una <strong>función de fitness</strong> dice qué tan buena es.</p>
+    <p>En K'iti Yachay, el agente actual (<code>AgenteProgramado</code>) siempre da las ayudas en el mismo orden: <strong>resaltar → pista → modelar</strong>, sin importar la categoría. ¿Será lo mejor para todas? El algoritmo genético puede buscar otra política.</p>
+    <dl class="pieces">
+      <div><dt>Cromosoma</dt><dd>Una política de ayudas completa.<span class="ex">12 genes: qué ayuda dar tras el 1.º, 2.º y 3.º error en cada una de las 4 categorías.</span></dd></div>
+      <div><dt>Gen</dt><dd>Una decisión.<span class="ex">R = resaltar, P = pista, M = modelar (mostrar la respuesta).</span></dd></div>
+      <div><dt>Fitness</dt><dd>La nota de cada política.<span class="ex">Puntaje esperado de un jugador simulado; más alto es mejor.</span></dd></div>
+    </dl>
+    <h3>El ciclo de cada generación</h3>
+    <ol class="cycle">
+      <li><div><strong>Evaluar.</strong> Se calcula el fitness de cada cromosoma de la población.</div></li>
+      <li><div><strong>Seleccionar.</strong> Por torneo: se toman 3 al azar y gana el de mejor fitness. Los buenos se reproducen más, pero los regulares también tienen oportunidad.</div></li>
+      <li><div><strong>Cruzar.</strong> Dos padres se cortan en un punto al azar; el hijo hereda la primera parte de uno y el resto del otro.</div></li>
+      <li><div><strong>Mutar.</strong> Cada gen del hijo tiene una probabilidad pequeña (6 %) de cambiar al azar. Sin esto, la población se estanca.</div></li>
+      <li><div><strong>Reemplazar.</strong> Los hijos forman la nueva generación. Los 2 mejores pasan sin cambios (elitismo), así nunca se pierde lo mejor encontrado.</div></li>
+    </ol>
+  </section>
+</div>
+
+<div class="wide" style="margin-top:1.5rem">
+  <div class="lab" id="ag-lab">
+    <div class="lab-head">
+      <div>
+        <span class="eyebrow">Laboratorio 2</span>
+        <h3>Evolucionar la política de ayudas</h3>
+      </div>
+      <div class="controls">
+        <button id="ag-step">1 generación</button>
+        <button class="primary" id="ag-run">Evolucionar 25</button>
+        <button id="ag-reset">Nueva población</button>
+      </div>
+    </div>
+    <div class="genes-legend" aria-hidden="true">
+      <span><i class="g r">R</i>Resaltar la zona</span>
+      <span><i class="g p">P</i>Pista con pictogramas</span>
+      <span><i class="g m">M</i>Modelar: mostrar la respuesta</span>
+    </div>
+    <div class="lab-grid">
+      <div style="display:grid; gap:1rem; min-width:0">
+        <div class="chart-box"><svg class="chart" id="ag-chart" viewBox="0 0 560 240" role="img" aria-label="Fitness por generación"></svg></div>
+        <div class="chromo-pair">
+          <div class="chromo">
+            <div class="chromo-top"><strong>Mejor de la generación <span id="ag-gen">0</span></strong><span class="score" id="ag-best-s"></span></div>
+            <div id="ag-best"></div>
+          </div>
+          <div class="chromo">
+            <div class="chromo-top"><strong>Agente actual (guion fijo)</strong><span class="score" id="ag-base-s"></span></div>
+            <div id="ag-base"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid; gap:1rem; align-content:start; min-width:0">
+        <div class="cross">
+          <strong>Último cruce</strong>
+          <div id="ag-cross"></div>
+          <p class="small muted">La raya marca el punto de corte. Los genes con borde mutaron.</p>
+        </div>
+        <div style="display:grid; gap:0.4rem">
+          <strong>Población (24, ordenada por fitness)</strong>
+          <div class="pop" id="ag-pop"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" style="margin-top:1.75rem">
+  <h3>El jugador simulado</h3>
+  <p>El fitness necesita un modelo de cómo responde el niño. Este es <strong>inventado para la explicación</strong>: los números no vienen de datos reales. En el proyecto se usaría <code>simulador.py</code>, y lo ideal sería calibrarlo con la especialista.</p>
+  <ul style="margin:0; padding-left:1.2rem; display:grid; gap:0.35rem;">
+    <li>Al primer intento acierta con probabilidad 0.35. Después de una ayuda, con la probabilidad de la tabla (repetir la misma ayuda rinde un 40 % menos).</li>
+    <li>Puntaje de la ronda: <strong>+10</strong> si acierta sin que le muestren la respuesta, <strong>+3</strong> si se la mostraron, <strong>−2</strong> por cada error.</li>
+    <li>Tras cada error puede <strong>abandonar por frustración</strong> (22 % tras el 1.º error, 44 % tras el 2.º): <strong>−6</strong>. Modelar evita el abandono.</li>
+  </ul>
+  <div class="tbl-wrap">
+    <table class="probs">
+      <thead><tr><th>Acierta tras…</th><th>Animal</th><th>Construcción</th><th>Transporte</th><th>Objeto</th></tr></thead>
+      <tbody>
+        <tr><th>Resaltar</th><td>0.55</td><td>0.65</td><td>0.50</td><td>0.35</td></tr>
+        <tr><th>Pista</th><td>0.70</td><td>0.45</td><td>0.50</td><td>0.30</td></tr>
+        <tr><th>Modelar</th><td>1.00</td><td>1.00</td><td>1.00</td><td>1.00</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Con este modelo, el algoritmo suele descubrir que conviene <strong>cambiar la ayuda según la categoría</strong>: pista para animales (“vive aquí”), resaltar para construcciones y modelar enseguida para objetos, que son los más difíciles. El guion fijo no puede hacer eso.</p>
+  <p class="note">Con 12 genes hay 3¹² = 531 441 políticas. Aquí todavía se pueden probar todas (es la línea punteada “óptimo” del gráfico) y por eso sabemos que el AG llega al óptimo. El AG vale la pena cuando el cromosoma crece (más categorías, más tipos de ayuda, el estado del niño) y probar todo deja de ser posible. Además, se ejecuta <strong>en tu PC</strong>: al servidor solo se sube la política ganadora, una tabla de 12 valores.</p>
+</div>
+
+<div class="wrap"><div class="divider"></div></div>
+
+<div class="wrap">
+  <section class="part" aria-labelledby="cmp-t" style="margin-top:0.5rem">
+    <h2 id="cmp-t">Cuándo usar cada uno</h2>
+    <div class="tbl-wrap">
+      <table class="compare">
+        <thead><tr><th></th><th>CSP</th><th>Algoritmo genético</th></tr></thead>
+        <tbody>
+          <tr><th>Pregunta</th><td>¿Hay una opción que cumpla todas las reglas?</td><td>¿Cuál es la mejor opción según una nota?</td></tr>
+          <tr><th>Resultado</th><td>Una solución válida, o la prueba de que no existe.</td><td>Una solución muy buena, sin garantía de que sea la óptima.</td></tr>
+          <tr><th>Necesita</th><td>Variables, dominios y restricciones.</td><td>Codificar la solución como cromosoma y una función de fitness.</td></tr>
+          <tr><th>En K'iti Yachay</th><td>Elegir distractores en cada ronda, en el servidor.</td><td>Buscar la política de ayudas, fuera del servidor, con el simulador.</td></tr>
+          <tr><th>Archivos</th><td><code>escenarios.py</code> · <code>escenarios.json</code></td><td><code>agentes.py</code> · <code>simulador.py</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+/* ------------------------------------------------------------ util */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const shuffle=(arr,rnd)=>{const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const $=id=>document.getElementById(id);
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ------------------------------------------------------------ CSP */
+const ANIMALES={
+  vaca:{n:'vaca',e:'🐄',amb:'campo y ciudad',esc:'granja'},
+  cangrejo:{n:'cangrejo',e:'🦀',amb:'agua',esc:'playa'},
+  paloma:{n:'paloma',e:'🕊️',amb:'campo y ciudad',esc:'ciudad'},
+  llama:{n:'llama',e:'🦙',amb:'frío',esc:'sierra'},
+  mono:{n:'mono',e:'🐒',amb:'calor',esc:'selva'},
+  pinguino:{n:'pingüino',e:'🐧',amb:'frío',esc:'polo'},
+  pato:{n:'pato',e:'🦆',amb:'agua',esc:'parque'},
+  gaviota:{n:'gaviota',e:'🐦',amb:'agua',esc:'puerto'},
+  camello:{n:'camello',e:'🐪',amb:'calor',esc:'desierto'},
+  rana:{n:'rana',e:'🐸',amb:'agua',esc:'lago'},
+};
+const IDS=Object.keys(ANIMALES);
+const ESC={granja:'Granja',playa:'Playa',ciudad:'Ciudad',sierra:'Sierra',selva:'Selva',polo:'Polo',parque:'Parque',puerto:'Puerto',desierto:'Desierto',lago:'Lago'};
+const CONF={granja:['pato','paloma'],parque:['paloma','rana'],lago:['pato','gaviota'],puerto:['cangrejo','pato'],playa:['gaviota'],ciudad:['pato'],sierra:['vaca'],selva:['rana'],polo:[],desierto:[]};
+const VARS=['D1','D2','D3'];
+const nm=id=>ANIMALES[id].n;
+
+function buildSteps(esc, noFrio, seed){
+  const rnd=mulberry32(seed);
+  const correct=IDS.find(id=>ANIMALES[id].esc===esc);
+  const pruned=VARS.map(()=>({}));   // id -> motivo
+  const assign=[null,null,null];
+  const steps=[]; let tries=0, backs=0;
+  const push=(tag,cls,msg,trying=null)=>steps.push({tag,cls,msg,trying,tries,backs,
+    pruned:pruned.map(p=>({...p})),assign:assign.slice()});
+  push('Inicio','bt',`Cada distractor (D1, D2, D3) puede ser cualquiera de los 10 animales. Respuesta del paisaje ${ESC[esc].toLowerCase()}: ${nm(correct)}.`);
+  VARS.forEach((_,v)=>pruned[v][correct]='es la respuesta');
+  push('Consistencia de nodo','node',`Restricción unaria: se borra ${nm(correct)} de los tres dominios porque es la respuesta correcta.`);
+  const conf=CONF[esc];
+  if(conf.length){VARS.forEach((_,v)=>conf.forEach(c=>pruned[v][c]='podría vivir aquí'));
+    push('Consistencia de nodo','node',`Restricción unaria: se borra ${conf.map(nm).join(' y ')}, porque también podría${conf.length>1?'n':''} estar en ${ESC[esc].toLowerCase()} y confundiría al niño.`);}
+  if(noFrio){const fr=IDS.filter(id=>ANIMALES[id].amb==='frío'&&!pruned[0][id]);
+    VARS.forEach((_,v)=>fr.forEach(c=>pruned[v][c]='pedido de la educadora'));
+    if(fr.length)push('Consistencia de nodo','node',`Restricción de la educadora: se borra ${fr.map(nm).join(' y ')} (frío).`);}
+  // AC-3 real sobre restricciones binarias
+  const ok=(a,b)=>a!==b&&ANIMALES[a].amb!==ANIMALES[b].amb;
+  const dom=v=>IDS.filter(id=>!pruned[v][id]);
+  const queue=[];VARS.forEach((_,i)=>VARS.forEach((_,j)=>{if(i!==j)queue.push([i,j])}));
+  const removed=[];
+  while(queue.length){const [i,j]=queue.shift();let changed=false;
+    for(const x of dom(i)){if(!dom(j).some(y=>ok(x,y))){pruned[i][x]='sin soporte (AC-3)';removed.push(`${nm(x)} de ${VARS[i]}`);changed=true}}
+    if(changed)VARS.forEach((_,k)=>{if(k!==i&&k!==j)queue.push([k,i])});}
+  push('AC-3','ac3',removed.length?`AC-3 revisa cada par de variables y borra: ${removed.join(', ')}.`
+    :`AC-3 revisa los 6 pares (Di, Dj). Cada valor que queda tiene al menos un compañero de otro ambiente en la otra variable, así que no borra nada.`);
+  const order=VARS.map((_,v)=>shuffle(dom(v),rnd));
+  let found=false;
+  function bt(v){
+    if(v===3){found=true;return true}
+    for(const x of order[v]){
+      tries++;
+      const clash=assign.slice(0,v).map((a,k)=>[a,k]).find(([a])=>!ok(x,a));
+      if(clash){const [a,k]=clash;
+        push('Backtracking','bad',`Pruebo ${VARS[v]} = ${nm(x)}. Choca con ${VARS[k]} = ${nm(a)}: ${x===a?'es el mismo animal':'ambos son del ambiente “'+ANIMALES[x].amb+'”'}.`,{v,x,good:false});
+        continue;}
+      assign[v]=x;
+      push('Backtracking','bt',`Pruebo ${VARS[v]} = ${nm(x)}. Cumple con lo asignado, lo acepto y paso a ${v<2?VARS[v+1]:'terminar'}.`,{v,x,good:true});
+      if(bt(v+1))return true;
+      assign[v]=null;
+    }
+    if(v>0){backs++;push('Retroceso','bad',`A ${VARS[v]} se le acabaron los valores. Retrocedo y cambio ${VARS[v-1]}.`);}
+    return false;
+  }
+  bt(0);
+  if(found)push('Solución','ok',`Solución: ${assign.map(nm).join(', ')}. Tres animales de ambientes distintos, ninguno confundible con ${ESC[esc].toLowerCase()}.`);
+  else push('Sin solución','bad',`El backtracking probó todo y no hay solución: solo quedan animales de ${new Set(dom(0).map(id=>ANIMALES[id].amb)).size} ambientes y se necesitan 3. El servidor tendría que relajar una regla.`);
+  return {steps,correct,found};
+}
+
+const cspState={esc:'granja',frio:false,seed:7,i:0,res:null};
+function cspBuild(){cspState.res=buildSteps(cspState.esc,cspState.frio,cspState.seed);cspState.i=0;cspRender()}
+function cspRender(){
+  const {steps,correct}=cspState.res, s=steps[cspState.i], last=cspState.i===steps.length-1;
+  $('csp-domains').innerHTML=VARS.map((V,v)=>`<div class="dom-row"><span class="dom-name">${V}</span><div class="chips">${
+    IDS.map(id=>{let c='chip',t='disponible';
+      if(s.pruned[v][id]){c+=' pruned';t='eliminado: '+s.pruned[v][id]}
+      else if(s.assign[v]===id&&!(s.trying&&s.trying.v===v)){c+=' assigned';t='asignado'}
+      if(s.trying&&s.trying.v===v&&s.trying.x===id){c+=s.trying.good?' try-ok':' try-bad';t=s.trying.good?'se prueba y cumple':'se prueba y no cumple'}
+      return `<span class="${c}" title="${t}"><span class="em" aria-hidden="true">${ANIMALES[id].e}</span>${nm(id)}<span class="visually" style="position:absolute;left:-9999px">, ${t}</span></span>`}).join('')
+  }</div></div>`).join('');
+  $('csp-tag').textContent=s.tag;$('csp-tag').className='tag '+s.cls;$('csp-msg').textContent=s.msg;
+  $('csp-count').textContent=`Paso ${cspState.i+1} de ${steps.length}`;
+  $('csp-tries').textContent=`Valores probados: ${s.tries}`;
+  $('csp-back').textContent=`Retrocesos: ${s.backs}`;
+  $('csp-prev').disabled=cspState.i===0;$('csp-next').disabled=last;$('csp-end').disabled=last;
+  const escN=ESC[cspState.esc].toLowerCase();
+  const art=['granja','playa','ciudad','sierra','selva'].includes(cspState.esc)?'la':'el';
+  $('csp-q').textContent=`Así se vería la ronda: «¿Qué animal hay en ${art} ${escN}?»`;
+  let cards;
+  if(last&&cspState.res.found){const opts=shuffle([correct,...s.assign],mulberry32(cspState.seed+1));
+    cards=opts.map(id=>`<div class="card${id===correct?' correct':''}"><span class="em" aria-hidden="true">${ANIMALES[id].e}</span>${nm(id)}${id===correct?' ✓':''}</div>`).join('');}
+  else{cards=`<div class="card correct"><span class="em" aria-hidden="true">${ANIMALES[correct].e}</span>${nm(correct)} ✓</div>`+
+    [0,1,2].map(v=>s.assign[v]&&!(s.trying&&s.trying.v===v&&!s.trying.good)?`<div class="card"><span class="em" aria-hidden="true">${ANIMALES[s.assign[v]].e}</span>${nm(s.assign[v])}</div>`:`<div class="card empty">${VARS[v]}<br>${last?'sin valor':'por elegir'}</div>`).join('');}
+  $('csp-cards').innerHTML=cards;
+}
+$('csp-esc').innerHTML=Object.entries(ESC).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+$('csp-esc').addEventListener('change',e=>{cspState.esc=e.target.value;cspBuild()});
+$('csp-frio').addEventListener('change',e=>{cspState.frio=e.target.checked;cspBuild()});
+$('csp-next').addEventListener('click',()=>{cspState.i=Math.min(cspState.i+1,cspState.res.steps.length-1);cspRender()});
+$('csp-prev').addEventListener('click',()=>{cspState.i=Math.max(cspState.i-1,0);cspRender()});
+$('csp-end').addEventListener('click',()=>{cspState.i=cspState.res.steps.length-1;cspRender()});
+$('csp-new').addEventListener('click',()=>{cspState.seed=(cspState.seed*7919+13)%100000;cspBuild();cspState.i=cspState.res.steps.length-1;cspRender()});
+cspBuild();
+
+/* ------------------------------------------------------------ AG */
+const CATS=['Animal','Construcción','Transporte','Objeto'];
+const HL=['r','p','m'],HN=['R','P','M'],HFULL=['Resaltar','Pista','Modelar'];
+const PROB=[[.55,.65,.50,.35],[.70,.45,.50,.30]];
+const P0=.35, ABAND=k=>0.22*k;
+function expCat(c,g){
+  function E(k){
+    const rem=4-k;let p;
+    if(k===0)p=P0;else{const h=g[k-1];if(h===2)p=1;else{p=PROB[h][c]*(g.slice(0,k-1).includes(h)?0.6:1);p=Math.max(p,1/rem)}}
+    if(rem===1)p=1;
+    const win=(g.slice(0,k).includes(2)?3:10)-2*k;
+    if(p>=1)return win;
+    const a=(k+1<4&&g[k]!==2)?ABAND(k+1):0;
+    return p*win+(1-p)*(a*-6+(1-a)*E(k+1));
+  }
+  return E(0);
+}
+const fit=g=>[0,1,2,3].reduce((s,c)=>s+expCat(c,g.slice(c*3,c*3+3)),0);
+const BASE=[0,1,2,0,1,2,0,1,2,0,1,2], BASE_F=fit(BASE);
+let OPT=-Infinity;
+for(let i=0;i<3**12;i++){let g=[],x=i;for(let j=0;j<12;j++){g.push(x%3);x=(x/3)|0}const f=fit(g);if(f>OPT)OPT=f}
+
+const POP=24,TOUR=3,PC=.9,PM=.06,ELITE=2;
+const ag={rnd:null,pop:[],gen:0,hist:[],cross:null,timer:null,seed:11};
+function evalPop(p){return p.map(g=>({g,f:fit(g)})).sort((a,b)=>b.f-a.f)}
+function agReset(){
+  ag.seed=(ag.seed*48271+7)%2147483647;ag.rnd=mulberry32(ag.seed);
+  ag.pop=evalPop(Array.from({length:POP},()=>Array.from({length:12},()=>Math.floor(ag.rnd()*3))));
+  ag.gen=0;ag.hist=[stat(ag.pop)];ag.cross=null;agRender();
+}
+function stat(p){return {best:p[0].f,avg:p.reduce((s,x)=>s+x.f,0)/p.length}}
+function tourney(){let b=null;for(let i=0;i<TOUR;i++){const c=ag.pop[Math.floor(ag.rnd()*POP)];if(!b||c.f>b.f)b=c}return b}
+function agStep(){
+  const next=ag.pop.slice(0,ELITE).map(x=>x.g.slice());
+  let shown=null;
+  while(next.length<POP){
+    const a=tourney().g,b=tourney().g;
+    const cut=ag.rnd()<PC?1+Math.floor(ag.rnd()*11):12;
+    const child=a.slice(0,cut).concat(b.slice(cut));const mut=[];
+    for(let i=0;i<12;i++)if(ag.rnd()<PM){child[i]=(child[i]+1+Math.floor(ag.rnd()*2))%3;mut.push(i)}
+    if(!shown&&cut<12)shown={a,b,cut,child:child.slice(),mut};
+    next.push(child);
+  }
+  ag.pop=evalPop(next);ag.gen++;ag.hist.push(stat(ag.pop));ag.cross=shown;agRender();
+}
+function gridHTML(g){
+  return `<table class="cgrid"><thead><tr><th></th><th>error 1</th><th>error 2</th><th>error 3</th></tr></thead><tbody>${
+    CATS.map((c,i)=>`<tr><th>${c}</th>${[0,1,2].map(j=>{const h=g[i*3+j];return `<td><span class="g ${HL[h]}" title="${HFULL[h]}">${HN[h]}</span></td>`}).join('')}</tr>`).join('')}</tbody></table>`;
+}
+function barHTML(g,cut,mut=[]){
+  return `<div class="bar">${g.map((h,i)=>(i===cut?'<span class="cut" aria-hidden="true"></span>':'')+`<span class="g ${HL[h]}${mut.includes(i)?' mut':''}" title="${CATS[(i/3)|0]}, error ${i%3+1}: ${HFULL[h]}">${HN[h]}</span>`).join('')}</div>`;
+}
+function chart(){
+  const W=560,H=240,L=44,R=12,T=14,B=30;
+  const n=Math.max(25,ag.hist.length-1);
+  const lo=Math.floor(Math.min(...ag.hist.map(h=>h.avg),BASE_F)-1),hi=Math.ceil(OPT+0.5);
+  const x=i=>L+(W-L-R)*i/n,y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo));
+  let s='';
+  const step=hi-lo>8?2:1;
+  for(let v=lo;v<=hi;v+=step)s+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end">${v}</text>`;
+  const tx=n<=25?5:10;for(let i=0;i<=n;i+=tx)s+=`<text x="${x(i)}" y="${H-10}" text-anchor="middle">${i}</text>`;
+  s+=`<text x="${W-R}" y="${H-10}" text-anchor="end" style="font-size:10px">generación</text>`;
+  s+=`<line x1="${L}" x2="${W-R}" y1="${y(OPT)}" y2="${y(OPT)}" stroke="var(--ok)" stroke-dasharray="3 4" stroke-width="1.5"/><text x="${W-R}" y="${y(OPT)-6}" text-anchor="end" style="fill:var(--ok)">óptimo ${OPT.toFixed(2)}</text>`;
+  s+=`<line x1="${L}" x2="${W-R}" y1="${y(BASE_F)}" y2="${y(BASE_F)}" stroke="var(--h-m)" stroke-dasharray="6 4" stroke-width="1.5"/><text x="${W-R}" y="${y(BASE_F)+14}" text-anchor="end" style="fill:var(--h-m)">agente actual ${BASE_F.toFixed(2)}</text>`;
+  const path=k=>ag.hist.map((h,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(h[k]).toFixed(1)}`).join('');
+  s+=`<path d="${path('avg')}" fill="none" stroke="var(--muted)" stroke-width="1.75"/>`;
+  s+=`<path d="${path('best')}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>`;
+  const lh=ag.hist[ag.hist.length-1],li=ag.hist.length-1;
+  s+=`<circle cx="${x(li)}" cy="${y(lh.best)}" r="4" fill="var(--accent)"/>`;
+  s+=`<g transform="translate(${L+8},${T+4})"><rect width="10" height="3" y="4" fill="var(--accent)"/><text x="16" y="10">mejor</text><rect x="70" width="10" height="3" y="4" fill="var(--muted)"/><text x="86" y="10">promedio</text></g>`;
+  $('ag-chart').innerHTML=s;
+}
+function agRender(){
+  chart();
+  $('ag-gen').textContent=ag.gen;
+  $('ag-best').innerHTML=gridHTML(ag.pop[0].g);$('ag-best-s').textContent=ag.pop[0].f.toFixed(2);
+  $('ag-base').innerHTML=gridHTML(BASE);$('ag-base-s').textContent=BASE_F.toFixed(2);
+  $('ag-pop').innerHTML=ag.pop.map(x=>`<div class="pop-row"><span class="score">${x.f.toFixed(2)}</span>${x.g.map((h,i)=>`<i class="${HL[h]}${i&&i%3===0?' sep':''}"></i>`).join('')}</div>`).join('');
+  $('ag-cross').innerHTML=ag.cross?
+    `<div class="cross-row"><span class="muted">Padre A</span>${barHTML(ag.cross.a,ag.cross.cut)}</div><div class="cross-row"><span class="muted">Padre B</span>${barHTML(ag.cross.b,ag.cross.cut)}</div><div class="cross-row"><strong>Hijo</strong>${barHTML(ag.cross.child,ag.cross.cut,ag.cross.mut)}</div>`
+    :'<p class="small muted">Todavía no hay cruces. Pulsa «1 generación».</p>';
+}
+$('ag-step').addEventListener('click',()=>{if(!ag.timer)agStep()});
+$('ag-reset').addEventListener('click',()=>{clearInterval(ag.timer);ag.timer=null;$('ag-run').disabled=false;agReset()});
+$('ag-run').addEventListener('click',()=>{
+  if(ag.timer)return;
+  if(reduced){for(let i=0;i<25;i++)agStep();return}
+  let k=0;$('ag-run').disabled=true;
+  ag.timer=setInterval(()=>{agStep();if(++k>=25){clearInterval(ag.timer);ag.timer=null;$('ag-run').disabled=false}},110);
+});
+agReset();
+})();
+</script>

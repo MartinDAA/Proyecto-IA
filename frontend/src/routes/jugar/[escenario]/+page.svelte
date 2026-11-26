@@ -3,8 +3,10 @@
 	import Cabecera from '#lib/components/Cabecera.svelte';
 	import Escena from '#lib/components/Escena.svelte';
 	import Frase from '#lib/components/Frase.svelte';
+	import Guia from '#lib/components/Guia.svelte';
 	import Pictograma from '#lib/components/Pictograma.svelte';
-	import { titulo, type Mensaje, type Turno } from '#lib/juego.js';
+	import { GUIA_JUEGO, ICONOS, INVITACION, POSES, primeraVez } from '#lib/guia.js';
+	import { VISTAS, titulo, type Mensaje, type Turno, type Vista } from '#lib/juego.js';
 	import { callar, esperar, hablar } from '#lib/voz.js';
 	import type { PageProps } from './$types';
 
@@ -19,19 +21,34 @@
 	let aviso = $state<Mensaje | null>(null);
 	let ocupado = $state(false);
 	let fallo = $state<string | null>(null);
+	// Uku explica el juego antes de la primera ronda (una vez por sesión).
+	let guia = $state(false);
 
 	const resumen = $derived(turno.resumen);
 
+	// Ayuda visual del paisaje. Se recuerda en una cookie para que el servidor la aplique
+	// al cargar: si no, los elementos se verían un instante antes de ocultarse.
+	let vista = $state<Vista>(untrack(() => data.vista));
+	function cambiarVista(nueva: Vista) {
+		vista = nueva;
+		document.cookie = `vista=${nueva}; path=/; SameSite=Lax`;
+	}
+
 	function decirTurno(t: Turno) {
 		if (t.resumen) {
-			hablar([t.resumen.frase.texto, ...t.resumen.no_pertenecen.map((m) => m.texto)].join(' '));
+			hablar([
+				t.resumen.frase.texto,
+				...t.resumen.no_pertenecen.map((m) => m.texto),
+				INVITACION.texto
+			]);
 		} else {
 			hablar(t.mensaje.texto);
 		}
 	}
 
 	onMount(() => {
-		decirTurno(turno);
+		if (turno.ronda === 1 && !turno.resumen && primeraVez('guia-juego')) guia = true;
+		else decirTurno(turno);
 	});
 	onDestroy(callar);
 
@@ -71,7 +88,7 @@
 		if (nuevo.correcto) {
 			decirTurno(nuevo);
 		} else {
-			hablar(`${nuevo.retro?.texto ?? ''} ${nuevo.mensaje.texto}`);
+			hablar([nuevo.retro?.texto ?? '', nuevo.mensaje.texto]);
 		}
 		ocupado = false;
 	}
@@ -82,7 +99,22 @@
 </svelte:head>
 
 <div class="flex min-h-dvh flex-col bg-background font-body">
-	<Cabecera usuario={data.user?.username} />
+	<Cabecera>
+		{#if !resumen}
+			<label class="flex flex-col gap-1 text-sm font-medium">
+				Elementos del paisaje
+				<select
+					class="rounded-lg border border-border bg-background px-2 py-2"
+					value={vista}
+					onchange={(e) => cambiarVista(e.currentTarget.value as Vista)}
+				>
+					{#each Object.entries(VISTAS) as [id, nombre] (id)}
+						<option value={id}>{nombre}</option>
+					{/each}
+				</select>
+			</label>
+		{/if}
+	</Cabecera>
 
 	{#if resumen}
 		<main
@@ -101,11 +133,11 @@
 					<h2 class="font-headings text-lg font-bold">Esto hay en {turno.escenario.nombre}</h2>
 					<button
 						type="button"
-						class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-card text-2xl shadow"
+						class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white shadow ring-2 ring-primary"
 						aria-label="Escuchar otra vez"
 						onclick={() => decirTurno(turno)}
 					>
-						🔊
+						<img src={ICONOS.escuchar} alt="" class="h-4/5 w-4/5" />
 					</button>
 				</div>
 				<Frase mensaje={resumen.frase} tamano="lg" />
@@ -125,6 +157,14 @@
 				</section>
 			{/if}
 
+			<div class="flex w-full items-end gap-3">
+				<img src={POSES.celebra} alt="Uku" class="h-28 w-28 shrink-0 sm:h-36 sm:w-36" />
+				<div class="flex flex-1 flex-col gap-2 rounded-2xl bg-card p-3 shadow-md sm:p-4">
+					<Frase mensaje={INVITACION} tamano="sm" />
+					<p class="font-headings text-lg font-bold">{INVITACION.texto}</p>
+				</div>
+			</div>
+
 			<div class="flex flex-wrap justify-center gap-3">
 				<a
 					href="/"
@@ -140,13 +180,13 @@
 					data-sveltekit-reload
 					class="flex items-center gap-2 rounded-2xl border border-border bg-card px-6 py-3 font-headings text-lg font-bold shadow-sm"
 				>
-					<span aria-hidden="true">🔁</span> Otra vez
+					<img src={ICONOS.otra_vez} alt="" class="h-9 w-9 rounded bg-white" /> Otra vez
 				</a>
 			</div>
 		</main>
 	{:else}
 		<main
-			class="mx-auto grid w-full max-w-6xl flex-1 content-start gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-6 lg:py-6"
+			class="mx-auto grid w-full max-w-7xl flex-1 content-start gap-6 px-4 py-4 sm:px-6 lg:grid-cols-[1.7fr_1fr] lg:content-center lg:items-center lg:gap-10 lg:py-6"
 		>
 			<div class="flex flex-col gap-3">
 				<ol class="flex items-center justify-center gap-2" aria-label="Rondas">
@@ -165,39 +205,57 @@
 						</li>
 					{/each}
 				</ol>
-				<Escena escenario={turno.escenario} resaltar={turno.resaltar} />
+				<div data-guia="paisaje">
+					<Escena
+						escenario={turno.escenario}
+						resaltar={turno.resaltar}
+						{vista}
+						revelados={turno.escenario.elementos.slice(0, turno.ronda - 1).map((e) => e.id)}
+					/>
+				</div>
 			</div>
 
-			<div class="flex flex-col gap-4">
-				<section class="rounded-2xl bg-card p-4 shadow-sm" aria-live="polite">
+			<div class="flex flex-col gap-6">
+				<section
+					class="flex flex-col gap-3 rounded-2xl bg-card p-4 shadow-sm"
+					aria-live="polite"
+					data-guia="pregunta"
+				>
 					{#if aviso}
-						<div class="mb-3 flex items-center gap-3 rounded-xl bg-section-red p-2">
+						<div class="flex items-center gap-3 rounded-xl bg-section-red p-2">
 							<Frase mensaje={aviso} tamano="sm" />
 							<span class="text-sm font-medium">{aviso.texto}</span>
 						</div>
 					{/if}
-					<div class="flex items-start justify-between gap-3">
-						<Frase mensaje={turno.mensaje} />
+					<div class="flex items-center gap-3">
+						<!-- Uku pregunta, y tras un error da ánimo junto a la pista. -->
+						<img
+							src={POSES[turno.ayuda ? 'animo' : 'lee']}
+							alt="Uku"
+							class="h-16 w-16 shrink-0 sm:h-20 sm:w-20"
+						/>
+						<p class="min-w-0 flex-1 font-medium">{turno.mensaje.texto}</p>
 						<button
 							type="button"
-							class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-2xl text-primary-foreground shadow"
+							class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white shadow ring-2 ring-primary"
 							aria-label="Escuchar otra vez"
 							onclick={() => hablar(turno.mensaje.texto)}
 						>
-							🔊
+							<img src={ICONOS.escuchar} alt="" class="h-4/5 w-4/5" />
 						</button>
 					</div>
-					<p class="mt-2 text-sm text-muted-foreground">{turno.mensaje.texto}</p>
+					<!-- La frase va sola en su fila: así cabe completa, de izquierda a derecha. -->
+					<Frase mensaje={turno.mensaje} />
 				</section>
 
-				<div class="grid grid-cols-2 gap-3 sm:gap-4">
+				<div class="grid grid-cols-2 gap-3 sm:gap-4" data-guia="opciones">
 					{#each turno.opciones as opcion (opcion.id)}
 						{@const elegido = marcado?.id === opcion.id}
 						{@const destacado = turno.destacar === opcion.id}
 						<button
 							type="button"
 							class={[
-								'rounded-2xl border-4 bg-white p-2 text-black shadow-md transition-all duration-300 sm:p-3',
+								'rounded-2xl border-4 bg-white p-2 text-black shadow-[0_5px_0_var(--color-border)] transition-all duration-300 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-selected-border active:translate-y-1 active:shadow-none sm:p-3',
 								elegido && marcado?.correcto === true && 'scale-105 border-green-600',
 								elegido && marcado?.correcto === false && 'border-red-600 opacity-60',
 								elegido && marcado?.correcto === null && 'border-selected-border',
@@ -228,9 +286,19 @@
 			class="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-green-700/85 p-6"
 			role="status"
 		>
-			<span class="text-8xl text-white" aria-hidden="true">✓</span>
+			<img src={POSES.celebra} alt="Uku celebra" class="h-40 w-40 sm:h-56 sm:w-56" />
 			<Frase mensaje={felicitacion} tamano="lg" class="justify-center" />
 			<p class="font-headings text-2xl font-bold text-white">{felicitacion.texto}</p>
 		</div>
 	{/if}
 </div>
+
+{#if guia}
+	<Guia
+		pasos={GUIA_JUEGO}
+		onterminar={() => {
+			guia = false;
+			decirTurno(turno);
+		}}
+	/>
+{/if}

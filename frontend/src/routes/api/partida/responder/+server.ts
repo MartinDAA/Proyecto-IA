@@ -2,17 +2,14 @@ import { error, json } from '@sveltejs/kit';
 import { backendFetch } from '#lib/server/backend.js';
 import type { RequestHandler } from './$types';
 
-// Reenvía la petición a FastAPI con el token de la sesión (la cookie es httpOnly).
-export const POST: RequestHandler = async ({ request, locals }) => {
-	if (!locals.token) error(401, 'No autenticado');
-
+// Reenvía la petición a FastAPI, cuya dirección solo conoce el servidor.
+export const POST: RequestHandler = async ({ request }) => {
 	let response: Response;
 	try {
-		response = await backendFetch(
-			'/api/partida/responder',
-			{ method: 'POST', body: await request.text() },
-			locals.token
-		);
+		response = await backendFetch('/api/partida/responder', {
+			method: 'POST',
+			body: await request.text()
+		});
 	} catch {
 		error(503, 'No se pudo conectar con el servidor.');
 	}

@@ -1,0 +1,36 @@
+Arrancar backend (tener uv instalado)
+- cd backend
+- uv run fastapi dev
+- Queda en http://127.0.0.1:8000
+
+Arrancar frontend (tener pnpm instalado), en otra terminal
+- cd frontend
+- pnpm install   (solo la primera vez)
+- pnpm dev
+- Abrir http://localhost:5173  (entra directo, sin usuario ni contraseña)
+
+Detener cualquiera de los dos
+- Ctrl + C en su terminal
+
+Tests del backend
+- cd backend
+- uv run pytest
+
+Regenerar la voz del juego (solo si cambian los textos; necesita ffmpeg)
+- cd backend/.voces
+- uvx --from piper-tts python -m piper.download_voices es_MX-claude-high   (solo la primera vez)
+- cd ..
+- uv run --with piper-tts python -m ia_models.herramientas.generar_audios
+
+Recalcular la política de ayudas con el algoritmo genético (solo si cambia ia_models/jugador.py)
+- cd backend
+- uv run python -m ia_models.herramientas.entrenar_politicas
+
+Experimentos
+- cd backend
+- uv run python -m ia_models.experimento_a   (una partida en consola)
+- uv run python -m ia_models.experimento_b   (guion contra algoritmo genético)
+
+Guardar los pictogramas de ARASAAC en el frontend (solo si se agregan pictogramas)
+- cd backend
+- uv run --with pillow python -m ia_models.herramientas.descargar_pictogramas

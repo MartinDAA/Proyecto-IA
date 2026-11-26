@@ -38,6 +38,8 @@ class Partida:
     escenario: Escenario
     rng: random.Random = field(default_factory=random.Random)
     rondas: list[Ronda] = field(default_factory=list)
+    # Elementos que el educador pidió no mostrar.
+    evitar: frozenset[str] = frozenset()
 
     @property
     def ronda(self) -> Ronda:
@@ -50,7 +52,7 @@ class Partida:
     def iniciar_ronda(self) -> Ronda:
         categoria = CATEGORIAS[len(self.rondas)]
         correcto = self.escenario.objetivo[categoria]
-        opciones = [correcto, *self.banco.distractores(self.escenario, categoria, self.rng)]
+        opciones = [correcto, *self.banco.distractores(self.escenario, categoria, self.rng, evitar=self.evitar)]
         self.rng.shuffle(opciones)
         self.rondas.append(Ronda(categoria, correcto, opciones))
         return self.ronda

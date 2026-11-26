@@ -4,6 +4,15 @@ API en FastAPI que expone el juego y el motor de decisión del agente. El agente
 pregunta por los elementos de un paisaje usando pictogramas, evalúa cada
 respuesta y responde con una ayuda cuando el jugador se equivoca.
 
+Usa dos técnicas de IA:
+
+- **CSP (AC-3 + backtracking)** para elegir los 3 distractores de cada ronda: distintos,
+  de ambientes distintos y nunca algo que podría estar en el paisaje ni que el
+  educador pidió evitar (`ia_models/csp.py`, `Banco.distractores()`).
+- **Algoritmo genético**, ejecutado fuera del servidor, para calcular qué ayuda dar
+  tras cada error según el perfil del niño (`ia_models/herramientas/entrenar_politicas.py`).
+  El resultado queda en `datos/politicas.json` y lo usa `AgenteGenetico`.
+
 ## Requisitos
 
 - [uv](https://docs.astral.sh/uv/) (gestiona Python y las dependencias)
@@ -18,8 +27,7 @@ uv sync
 uv run fastapi dev      # http://localhost:8000 · documentación en /docs
 ```
 
-Al arrancar se crea un usuario temporal **admin / admin** en memoria (solo para
-desarrollo). Se puede cambiar con `SEED_ADMIN_USERNAME` y `SEED_ADMIN_PASSWORD`.
+La API no requiere autenticación.
 
 ## Datos del juego
 
@@ -35,6 +43,10 @@ contiene tres bloques:
   categoría) y una lista de elementos `compatibles` que nunca se usan como
   distractores.
 
+Cada elemento tiene un `ambiente` (agua, frio, calor o campo_ciudad) que usa el CSP.
+Las listas de `ambiente` y `compatibles` son provisionales: falta validarlas con la
+especialista. `datos/politicas.json` guarda la tabla de ayudas de cada perfil.
+
 La ruta se busca automáticamente desde el código. Para usar otro archivo, define
 `KITI_ESCENARIOS` con la ruta al JSON.
 
@@ -44,25 +56,21 @@ Se leen desde el entorno o desde un archivo `.env` en esta carpeta.
 
 | Variable | Por defecto | Descripción |
 | --- | --- | --- |
-| `SECRET_KEY` | clave de desarrollo | Clave para firmar los JWT. Cambiarla fuera de desarrollo. |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | Duración del token de acceso. |
 | `CORS_ORIGINS` | `["http://localhost:5173", "http://localhost:4173"]` | Orígenes permitidos por CORS. |
-| `SEED_ADMIN_USERNAME` | `admin` | Usuario temporal creado al arrancar. |
-| `SEED_ADMIN_PASSWORD` | `admin` | Contraseña del usuario temporal. |
 | `KITI_ESCENARIOS` | — | Ruta alternativa a `datos/escenarios.json`. |
 
 ## Endpoints
 
-Las rutas protegidas requieren `Authorization: Bearer <token>`.
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| GET | `/api/health` | Comprueba que el servidor está activo. |
+| GET | `/api/escenarios` | Lista los 10 paisajes con sus pictogramas. |
+| GET | `/api/perfiles` | Lista los perfiles de ayuda que puede elegir el educador. |
+| POST | `/api/partida/iniciar` | `{ escenario_id, perfil?, evitar? }` → primer turno de la partida. `perfil` es `estandar` por defecto; `evitar` es una lista de elementos que no deben aparecer. |
+| POST | `/api/partida/responder` | `{ partida_id, pictograma }` → turno siguiente, ayuda o resumen. |
 
-| Método | Ruta | Auth | Descripción |
-| --- | --- | --- | --- |
-| GET | `/api/health` | No | Comprueba que el servidor está activo. |
-| POST | `/api/auth/login` | No | `{ username, password }` → `{ access_token, token_type }`. |
-| GET | `/api/auth/me` | Sí | Devuelve el usuario del token. |
-| GET | `/api/escenarios` | Sí | Lista los 10 paisajes con sus pictogramas. |
-| POST | `/api/partida/iniciar` | Sí | `{ escenario_id }` → primer turno de la partida. |
-| POST | `/api/partida/responder` | Sí | `{ partida_id, pictograma }` → turno siguiente, ayuda o resumen. |
+Las partidas viven en memoria: el servidor debe correr con un solo proceso, y se
+descartan las terminadas y las de más de 2 horas.
 
 ## Tests y simulación
 
@@ -70,32 +78,43 @@ Las rutas protegidas requieren `Authorization: Bearer <token>`.
 uv run pytest
 uv run python -m ia_models.experimento_a                          # partida simulada
 uv run python -m ia_models.experimento_a --escenario playa --semilla 7
+uv run python -m ia_models.experimento_b                          # guion fijo contra algoritmo genético
 ```
 
-`uv run python -m ia_models.herramientas.resolver_arasaac` completa los
-identificadores de ARASAAC que falten en el JSON (modifica el archivo).
+Herramientas (se ejecutan solo cuando cambian los datos):
+
+| Comando | Qué hace |
+| --- | --- |
+| `uv run python -m ia_models.herramientas.entrenar_politicas` | Vuelve a calcular `datos/politicas.json` con el algoritmo genético. |
+| `uv run --with pillow python -m ia_models.herramientas.descargar_pictogramas` | Guarda los pictogramas de ARASAAC en `frontend/static/pictogramas/`. |
+| `uv run --with piper-tts python -m ia_models.herramientas.generar_audios` | Genera la voz pregrabada (necesita ffmpeg y una voz de Piper en `.voces/`). |
+| `uv run python -m ia_models.herramientas.resolver_arasaac` | Completa los identificadores de ARASAAC que falten en el JSON. |
 
 ## Estructura
 
 ```
 app/
-├── main.py                  # app, CORS, routers y usuario temporal
-├── dependencies.py          # inyección de dependencias y usuario autenticado
-├── core/                    # configuración y seguridad (hash, JWT)
+├── main.py                  # app, CORS y routers
+├── dependencies.py          # inyección de dependencias
+├── core/                    # configuración
 ├── models/                  # modelos de dominio y esquemas de la API
 ├── repositories/            # interfaces de acceso a datos
 │   └── implementations/     # implementaciones en memoria
-├── services/                # lógica de negocio (auth y partida)
+├── services/                # lógica de negocio de la partida
 └── controllers/             # endpoints HTTP
 ia_models/
 ├── escenarios.py            # carga y consulta del banco de escenarios
 ├── entorno.py               # estado de la partida y reglas de las rondas
-├── agentes.py               # agente que elige la siguiente ayuda
+├── csp.py                   # AC-3 y backtracking (distractores)
+├── jugador.py               # jugador simulado y perfiles (aptitud del AG)
+├── agentes.py               # agente programado y agente genético
 ├── generador.py             # mensajes en pictogramas y texto
 ├── simulador.py             # partidas automáticas para pruebas
 ├── experimento_a.py         # partida guiada por consola
-└── herramientas/            # utilidades (resolver pictogramas de ARASAAC)
+├── experimento_b.py         # comparación de agentes
+└── herramientas/            # algoritmo genético, pictogramas, voz y ARASAAC
 datos/escenarios.json        # banco de escenarios y catálogo de pictogramas
+datos/politicas.json         # tabla de ayudas por perfil (sale del AG)
 tests/                       # pruebas del motor y de la API
 ```
 

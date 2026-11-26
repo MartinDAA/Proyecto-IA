@@ -1,7 +1,32 @@
 @import 'tailwindcss';
 
-/* Los degradados de cada paisaje se definen en el banco de escenarios. */
-@source '../../../datos/escenarios.json';
+/* Degradados de cada paisaje ("cielo" en backend/datos/escenarios.json): el frontend se despliega sin ese archivo.
+   Si agregas o cambias un cielo allí, actualiza esta lista. */
+@source inline(
+	'from-amber-100 from-emerald-200 from-sky-100 from-sky-200 from-sky-300 from-slate-200 to-amber-200 to-blue-500 to-blue-600 to-emerald-700 to-green-400 to-green-500 to-green-700 to-slate-200 to-slate-400 to-yellow-500 via-blue-200 via-cyan-100 via-cyan-200 via-emerald-100 via-green-300 via-indigo-200 via-lime-100 via-orange-200 via-sky-200 via-sky-300'
+);
+
+/* Sin animaciones si el sistema pide reducir el movimiento: pueden sobreestimular. */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	::before,
+	::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* Elementos del paisaje: pegatinas recortadas con borde blanco, distintas de los botones.
+   La silueta (ayuda visual) oscurece la figura y conserva el borde. */
+.pegatina :is(img, [role='img']) {
+	filter: brightness(var(--brillo, 1)) drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1.5px #fff)
+		drop-shadow(0 0 1.5px #fff) drop-shadow(0 3px 3px rgb(0 0 0 / 0.35));
+}
+.pegatina.silueta {
+	--brillo: 0;
+}
 
 @custom-variant dark (&:where(.dark, .dark *));
 

@@ -1,12 +1,30 @@
 <script lang="ts">
 	import Pictograma from '#lib/components/Pictograma.svelte';
-	import type { Escenario } from '#lib/juego.js';
+	import type { Escenario, Vista } from '#lib/juego.js';
 
 	let {
 		escenario,
 		resaltar = null,
+		vista = 'visibles',
+		revelados = [],
 		class: className = ''
-	}: { escenario: Escenario; resaltar?: string | null; class?: string } = $props();
+	}: {
+		escenario: Escenario;
+		resaltar?: string | null;
+		vista?: Vista;
+		/** Elementos ya acertados: se ven siempre. */
+		revelados?: string[];
+		class?: string;
+	} = $props();
+
+	const PASOS: Vista[] = ['ocultos', 'siluetas', 'visibles'];
+
+	// Resaltar aclara un paso el elemento buscado: de oculto a silueta, de silueta a visible.
+	function vistaDe(id: string): Vista {
+		if (revelados.includes(id)) return 'visibles';
+		const paso = PASOS.indexOf(vista) + (resaltar === id ? 1 : 0);
+		return PASOS[Math.min(paso, PASOS.length - 1)];
+	}
 
 	// Posición de cada elemento (animal, construcción, transporte, objeto) en el paisaje.
 	const lugares = [
@@ -25,23 +43,31 @@
 	]}
 	aria-label="Paisaje: {escenario.pictograma.nombre}"
 >
-	<div class="absolute inset-0 flex items-center justify-center">
-		<div class="w-[34%] rounded-2xl bg-white/90 p-2 text-black shadow-lg">
-			<Pictograma picto={escenario.pictograma} />
-		</div>
-	</div>
+	<!-- El lugar es la escena: sin marco, para que no se confunda con los elementos. -->
+	<img
+		src={escenario.pictograma.imagen}
+		alt=""
+		class="absolute top-1/2 left-1/2 h-[92%] -translate-x-1/2 -translate-y-1/2 rounded-xl object-contain"
+	/>
 
 	{#each escenario.elementos as elemento, i (elemento.id)}
 		{@const brilla = resaltar === elemento.id}
+		{@const como = vistaDe(elemento.id)}
 		<div
 			class={[
-				'absolute w-[17%] rounded-xl bg-white p-1 text-black shadow-md transition-all duration-500',
+				'pegatina absolute w-[17%] rounded-xl transition-all duration-500',
 				lugares[i],
 				brilla && 'z-10 scale-125 animate-pulse ring-[6px] ring-yellow-400',
-				resaltar && !brilla && 'opacity-40'
+				resaltar && !brilla && 'opacity-40',
+				como === 'siluetas' && 'silueta',
+				como === 'ocultos' && 'invisible'
 			]}
 		>
-			<Pictograma picto={elemento} etiqueta={false} />
+			<Pictograma
+				picto={elemento}
+				etiqueta={false}
+				class="[&>div:first-child]:bg-transparent [&>div:first-child]:p-0"
+			/>
 		</div>
 	{/each}
 </section>

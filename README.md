@@ -15,6 +15,7 @@ dependencias, configuración y documentación.
 | --- | --- | --- |
 | [`backend/`](backend/) | API FastAPI, motor del agente y banco de escenarios (Python + uv). | [README del backend](backend/README.md) |
 | [`frontend/`](frontend/) | Interfaz SvelteKit con pictogramas y voz (TypeScript + pnpm). | [README del frontend](frontend/README.md) |
+| [`docs/`](docs/) | Informe, plan de IA y despliegue, explicación del CSP y del algoritmo genético, y comandos de arranque. | [Plan](docs/PLAN_IA_Y_DESPLIEGUE.md) |
 
 ## Puesta en marcha
 
@@ -36,7 +37,7 @@ pnpm install
 pnpm dev                # http://localhost:5173
 ```
 
-El usuario de desarrollo es **admin / admin**. El frontend usa
+No hace falta iniciar sesión. El frontend usa
 `http://localhost:8000` como backend por defecto; se puede cambiar con
 `BACKEND_URL`.
 

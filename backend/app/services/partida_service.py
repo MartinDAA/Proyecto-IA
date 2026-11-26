@@ -1,20 +1,23 @@
 import random
 import uuid
+from collections.abc import Mapping
 
 from app.models.partida import (
     AyudaOut,
     CategoriaOut,
     EscenarioOut,
     MensajeOut,
+    PerfilOut,
     PictogramaOut,
     ResumenOut,
     TurnoOut,
 )
 from app.repositories.partida_repository import PartidaRepository, SesionPartida
 from ia_models import generador
-from ia_models.agentes import AgenteProgramado
+from ia_models.agentes import Agente
 from ia_models.entorno import CATEGORIAS, Ayuda, Partida
 from ia_models.escenarios import Banco, Escenario
+from ia_models.jugador import PERFILES
 
 
 class PartidaNoEncontrada(Exception):
@@ -24,29 +27,40 @@ class PartidaNoEncontrada(Exception):
 class PartidaService:
     """Orquesta la partida: Captura → Motor de Decisión (agente) → Generador de Respuestas."""
 
-    def __init__(self, partidas: PartidaRepository, agente: AgenteProgramado, banco: Banco) -> None:
+    def __init__(self, partidas: PartidaRepository, agentes: Mapping[str, Agente], banco: Banco) -> None:
         self.partidas = partidas
-        self.agente = agente
+        # Un agente por perfil.
+        self.agentes = agentes
         self.banco = banco
 
     # ------------------------------------------------------------------ consultas
     def escenarios(self) -> list[EscenarioOut]:
         return [self._escenario(e) for e in self.banco.escenarios.values()]
 
+    def perfiles(self) -> list[PerfilOut]:
+        return [PerfilOut(id=p.id, nombre=p.nombre, descripcion=p.descripcion) for p in PERFILES.values()]
+
     # ------------------------------------------------------------------ acciones
-    def iniciar(self, escenario_id: str, usuario: str) -> TurnoOut:
+    def iniciar(self, escenario_id: str, perfil: str, evitar: frozenset[str]) -> TurnoOut:
         escenario = self.banco.escenarios.get(escenario_id)
         if escenario is None:
             raise PartidaNoEncontrada(f"No existe el escenario '{escenario_id}'")
-        partida = Partida(self.banco, escenario, rng=random.Random())
+        if perfil not in self.agentes:
+            raise PartidaNoEncontrada(f"No existe el perfil '{perfil}'")
+        if evitar & set(escenario.objetivo.values()):
+            raise ValueError(f"En {escenario.nombre} aparece un elemento a evitar.")
+        partida = Partida(self.banco, escenario, rng=random.Random(), evitar=evitar)
+        # Se comprueba antes de empezar que todas las rondas tienen distractores.
+        for categoria in CATEGORIAS:
+            self.banco.distractores(escenario, categoria, partida.rng, evitar=evitar)
         partida.iniciar_ronda()
-        sesion = SesionPartida(str(uuid.uuid4()), usuario, partida)
+        sesion = SesionPartida(str(uuid.uuid4()), partida, perfil)
         self.partidas.save(sesion)
         return self._turno(sesion)
 
-    def responder(self, partida_id: str, pictograma: str, usuario: str) -> TurnoOut:
+    def responder(self, partida_id: str, pictograma: str) -> TurnoOut:
         sesion = self.partidas.get(partida_id)
-        if sesion is None or sesion.usuario != usuario:
+        if sesion is None:
             raise PartidaNoEncontrada("No existe la partida")
         partida = sesion.partida
         if partida.terminada:
@@ -59,7 +73,7 @@ class PartidaService:
                 partida.iniciar_ronda()
             return self._turno(sesion, retro=retro, elegido=pictograma, correcto=True)
 
-        accion = self.agente.elegir_ayuda(ronda)
+        accion = self.agentes[sesion.perfil].elegir_ayuda(ronda)
         partida.aplicar_ayuda(accion)
         retro = generador.Mensaje([pictograma, "no", "aqui"], generador.error(self.banco, pictograma))
         return self._turno(sesion, retro=retro, elegido=pictograma, correcto=False, ayuda=accion)
@@ -67,7 +81,8 @@ class PartidaService:
     # ------------------------------------------------------------------ respuestas
     def _picto(self, id: str) -> PictogramaOut:
         p = self.banco.pictogramas[id]
-        imagen = f"https://static.arasaac.org/pictograms/{p.arasaac}/{p.arasaac}_500.png" if p.arasaac else None
+        # Copia local, servida por el frontend (ia_models/herramientas/descargar_pictogramas.py).
+        imagen = f"/pictogramas/{p.arasaac}.webp" if p.arasaac else None
         return PictogramaOut(id=p.id, nombre=p.nombre, emoji=p.emoji, imagen=imagen)
 
     def _mensaje(self, m: generador.Mensaje) -> MensajeOut:

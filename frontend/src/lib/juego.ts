@@ -4,7 +4,7 @@ export type Pictograma = {
 	id: string;
 	nombre: string;
 	emoji: string;
-	/** URL del pictograma de ARASAAC; si no carga se muestra el emoji. */
+	/** Pictograma de ARASAAC guardado en static/pictogramas; si no carga se muestra el emoji. */
 	imagen: string | null;
 };
 
@@ -17,6 +17,8 @@ export type Escenario = {
 	/** Un elemento por categoría: animal, construcción, transporte y objeto. */
 	elementos: Pictograma[];
 };
+
+export type Perfil = { id: string; nombre: string; descripcion: string };
 
 export type Mensaje = { pictogramas: Pictograma[]; texto: string };
 
@@ -43,6 +45,10 @@ export type Turno = {
 		terminar: Pictograma;
 	} | null;
 };
+
+/** Cómo se ven los elementos del paisaje: es una ayuda visual que el educador ajusta. */
+export const VISTAS = { visibles: 'Visibles', siluetas: 'Siluetas', ocultos: 'Ocultos' };
+export type Vista = keyof typeof VISTAS;
 
 /** "la granja" → "Granja" */
 export function titulo(escenario: Escenario) {

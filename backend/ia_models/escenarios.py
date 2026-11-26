@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
+from ia_models import csp
+
 ARCHIVO = Path("datos") / "escenarios.json"
 
 
@@ -17,6 +19,8 @@ class Pictograma:
     emoji: str
     arasaac: int | None = None
     categoria: str | None = None
+    # Dónde se encuentra el elemento: los distractores de una ronda son de ambientes distintos.
+    ambiente: str | None = None
     # Secuencia de pictogramas y texto que usa el agente para dar la pista de este elemento.
     pista: tuple[str, ...] = ()
     texto_pista: str = ""
@@ -39,6 +43,10 @@ class Escenario:
     compatibles: frozenset[str]
 
 
+class SinDistractores(ValueError):
+    pass
+
+
 @dataclass(frozen=True)
 class Banco:
     pictogramas: dict[str, Pictograma]
@@ -51,13 +59,35 @@ class Banco:
     def elementos_de(self, categoria: str) -> list[str]:
         return [p.id for p in self.pictogramas.values() if p.categoria == categoria]
 
-    def distractores(self, escenario: Escenario, categoria: str, rng: random.Random, n: int = 3) -> list[str]:
-        """Elige al azar n elementos de la categoría que no pertenecen al escenario."""
-        correcto = escenario.objetivo[categoria]
-        candidatos = [
-            e for e in self.elementos_de(categoria) if e != correcto and e not in escenario.compatibles
-        ]
-        return rng.sample(candidatos, n)
+    def candidatos(self, escenario: Escenario, categoria: str, evitar: frozenset[str] = frozenset()) -> list[str]:
+        """Restricciones unarias: ni la respuesta, ni lo que podría estar ahí, ni lo que el educador evita."""
+        fuera = {escenario.objetivo[categoria]} | escenario.compatibles | evitar
+        return [e for e in self.elementos_de(categoria) if e not in fuera]
+
+    def distractores(
+        self,
+        escenario: Escenario,
+        categoria: str,
+        rng: random.Random,
+        n: int = 3,
+        evitar: frozenset[str] = frozenset(),
+    ) -> list[str]:
+        """Resuelve el CSP de la ronda: n distractores distintos y, si es posible, de ambientes distintos."""
+
+        def distinto_ambiente(a: str, b: str) -> bool:
+            return self.pictogramas[a].ambiente != self.pictogramas[b].ambiente
+
+        candidatos = self.candidatos(escenario, categoria, evitar)
+        # Cada dominio en orden aleatorio para que las rondas varíen.
+        dominios = [rng.sample(candidatos, len(candidatos)) for _ in range(n)]
+        # Si no hay solución se relaja la regla de ambientes; que sean distintos no se relaja.
+        for restriccion in (distinto_ambiente, str.__ne__):
+            if solucion := csp.resolver(dominios, restriccion):
+                return solucion
+        raise SinDistractores(
+            f"No quedan suficientes opciones de {self.categoria(categoria).nombre} "
+            f"para {escenario.nombre}. Quita algún elemento a evitar."
+        )
 
 
 def ruta_escenarios() -> Path:
@@ -80,6 +110,7 @@ def cargar_banco(ruta: Path | None = None) -> Banco:
             emoji=p["emoji"],
             arasaac=p.get("arasaac"),
             categoria=p.get("categoria"),
+            ambiente=p.get("ambiente"),
             pista=tuple(p.get("pista", ())),
             texto_pista=p.get("texto_pista", ""),
         )

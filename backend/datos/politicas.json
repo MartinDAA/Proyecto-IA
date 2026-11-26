@@ -1,0 +1,77 @@
+{
+  "baja_tolerancia": {
+    "aptitud": 17.58,
+    "politica": {
+      "animal": [
+        "pista",
+        "modelar",
+        "modelar"
+      ],
+      "construccion": [
+        "resaltar",
+        "modelar",
+        "modelar"
+      ],
+      "transporte": [
+        "modelar",
+        "modelar",
+        "modelar"
+      ],
+      "objeto": [
+        "modelar",
+        "modelar",
+        "modelar"
+      ]
+    }
+  },
+  "estandar": {
+    "aptitud": 19.0,
+    "politica": {
+      "animal": [
+        "pista",
+        "modelar",
+        "modelar"
+      ],
+      "construccion": [
+        "resaltar",
+        "modelar",
+        "modelar"
+      ],
+      "transporte": [
+        "resaltar",
+        "modelar",
+        "modelar"
+      ],
+      "objeto": [
+        "modelar",
+        "modelar",
+        "modelar"
+      ]
+    }
+  },
+  "autonomia": {
+    "aptitud": 21.55,
+    "politica": {
+      "animal": [
+        "pista",
+        "resaltar",
+        "pista"
+      ],
+      "construccion": [
+        "resaltar",
+        "pista",
+        "resaltar"
+      ],
+      "transporte": [
+        "resaltar",
+        "pista",
+        "pista"
+      ],
+      "objeto": [
+        "resaltar",
+        "pista",
+        "pista"
+      ]
+    }
+  }
+}

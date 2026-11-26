@@ -1,5 +1,6 @@
+import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from ia_models.entorno import Partida
 
@@ -7,8 +8,9 @@ from ia_models.entorno import Partida
 @dataclass
 class SesionPartida:
     id: str
-    usuario: str
     partida: Partida
+    perfil: str
+    creada: float = field(default_factory=time.monotonic)
 
 
 class PartidaRepository(ABC):
