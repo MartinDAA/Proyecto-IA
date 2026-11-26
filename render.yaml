@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: kiti-yachay-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install uv && uv sync --frozen --no-dev
+    # 1 solo worker: las partidas viven en memoria.
+    startCommand: uv run --no-dev fastapi run --host 0.0.0.0 --port $PORT --workers 1
+    healthCheckPath: /api/health

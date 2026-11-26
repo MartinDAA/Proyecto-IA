@@ -34,3 +34,10 @@ Experimentos
 Guardar los pictogramas de ARASAAC en el frontend (solo si se agregan pictogramas)
 - cd backend
 - uv run --with pillow python -m ia_models.herramientas.descargar_pictogramas
+
+Despliegue
+- Backend (Render): New > Blueprint > este repo, rama renee. Usa render.yaml (rootDir backend, 1 worker).
+  Probar: https://<servicio>.onrender.com/api/health
+- Frontend (Vercel): importar el repo, Root Directory = frontend, framework SvelteKit.
+  Variable de entorno: BACKEND_URL = https://<servicio>.onrender.com  (sin / al final)
+- El plan gratuito de Render se duerme tras ~15 min: abrir la página unos minutos antes de presentar.
