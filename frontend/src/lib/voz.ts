@@ -25,6 +25,7 @@ function sintetizar(texto: string): Promise<void> {
 		frase.lang = 'es-PE';
 		frase.voice = vozEspanol() ?? null;
 		frase.rate = 0.85;
+		frase.pitch = 1.5;
 		// Algunos navegadores no disparan "end": se usa un tiempo máximo como respaldo.
 		const respaldo = setTimeout(resolve, 900 + texto.length * 90);
 		const terminar = () => {
